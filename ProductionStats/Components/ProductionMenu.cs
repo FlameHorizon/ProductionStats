@@ -349,30 +349,30 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
                         color: Color.White,
                         drawShadow: false);
 
-                    leftOffset += 72;
+                    leftOffset += 80;
 
                     float wrapWidth = width - leftOffset - gutter;
 
-                    // draw name & item type
-                    Vector2 nameSize = contentBatch.DrawTextBlock(
-                        font: font,
-                        text: $"{itemStock.Item.Name}.",
-                        position: new Vector2(x + leftOffset, y + topOffset + 15),
-                        wrapWidth: wrapWidth,
-                        bold: Constant.AllowBold);
-
-                    string item = $"You own {itemStock.Count} of these";
-
-                    Vector2 itemCountPosition = new(
-                        x + leftOffset + nameSize.X + spaceWidth,
-                        y + topOffset + 15);
-
+                    // drawing item count
+                    string item = $"{itemStock.Count}x ";
+                    Vector2 itemCountPosition =  new(x + leftOffset, y + topOffset + 15);
                     Vector2 itemCountSize = contentBatch.DrawTextBlock(
                             font: font,
-                            text: $"{item}.",
+                            text: $"{item}",
                             position: itemCountPosition,
                             wrapWidth: wrapWidth);
-
+                    
+                    // drawing item name
+                    Vector2 namePosition = new(
+                        x + leftOffset + itemCountSize.X + spaceWidth,
+                        y + topOffset + 15);
+                    
+                    Vector2 nameSize = contentBatch.DrawTextBlock(
+                        font: font,
+                        text: $"{itemStock.Item.Name}",
+                        position: namePosition,
+                        wrapWidth: wrapWidth,
+                        bold: Constant.AllowBold);
                     // when last item was drawn on the right side,
                     // go to next row below and set column left as current.
                     if (leftSide == false)
