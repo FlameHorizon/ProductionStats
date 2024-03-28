@@ -373,6 +373,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
                         position: namePosition,
                         wrapWidth: wrapWidth,
                         bold: Constant.AllowBold);
+
                     // when last item was drawn on the right side,
                     // go to next row below and set column left as current.
                     if (leftSide == false)

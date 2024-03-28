@@ -1,9 +1,10 @@
-﻿using StardewModdingAPI;
+﻿using ProductionStats.Components;
+using ProductionStats.Framework;
+using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
 using StardewValley.Menus;
-using ProductionStats.Components;
 
 namespace ProductionStats;
 
@@ -19,6 +20,9 @@ internal class ModEntry : Mod
     /// </summary>
     private readonly PerScreen<Stack<IClickableMenu>> _previousMenus = new(() => new());
 
+    /// <summary>The configure key bindings.</summary>
+    private ModConfigKeys _keys = new();
+
     /// <summary>The mod entry point, called after the mod is first loaded.</summary>
     /// <param name="helper">
     ///     Provides methods for interacting with the mod directory, 
@@ -26,6 +30,7 @@ internal class ModEntry : Mod
     /// </param>
     public override void Entry(IModHelper helper)
     {
+        _keys = Helper.ReadConfig<ModConfigKeys>();
         _chestFinder = new ChestFinder(helper.Multiplayer);
 
         // hook up events
@@ -53,21 +58,25 @@ internal class ModEntry : Mod
     /// <param name="e">The event data.</param>
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
-        var toggleMenu = new KeybindList(SButton.F5);
-        var scrollUp = new KeybindList(SButton.Up);
-        var scrollDown = new KeybindList(SButton.Down);
-
-        if (toggleMenu.JustPressed())
+        if (_keys.ToggleMenu.JustPressed())
         {
             ToggleMenu();
         }
-        else if (scrollUp.JustPressed())
+        else if (_keys.ScrollUp.JustPressed())
         {
             (Game1.activeClickableMenu as IScrollableMenu)?.ScrollUp();
         }
-        else if (scrollDown.JustPressed())
+        else if (_keys.ScrollDown.JustPressed())
         {
             (Game1.activeClickableMenu as IScrollableMenu)?.ScrollDown();
+        }
+        else if (_keys.PageUp.JustPressed())
+        {
+            (Game1.activeClickableMenu as IScrollableMenu)?.ScrollUp(Game1.activeClickableMenu.height);
+        }
+        else if (_keys.PageDown.JustPressed())
+        {
+            (Game1.activeClickableMenu as IScrollableMenu)?.ScrollDown(Game1.activeClickableMenu.height);
         }
     }
 
