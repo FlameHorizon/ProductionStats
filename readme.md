@@ -1,6 +1,6 @@
 # ProductionStats
 
-This mod is allows you to lookup how much items you have across various of storages on your farm and outside in Stardew Valley.
+This mod allows you to lookup how much items you have across various of storages on your farm and outside in Stardew Valley.
 
 ![In game display](/imgs/display-in-game.png)
 
