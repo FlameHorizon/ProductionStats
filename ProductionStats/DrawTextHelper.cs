@@ -36,7 +36,9 @@ internal static class DrawTextHelper
     public static Vector2 DrawTextBlock(this SpriteBatch batch, SpriteFont font, IEnumerable<IFormattedText?>? text, Vector2 position, float wrapWidth, float scale = 1)
     {
         if (text == null)
+        {
             return new Vector2(0, 0);
+        }
 
         // track draw values
         float xOffset = 0;
@@ -50,7 +52,9 @@ internal static class DrawTextHelper
         foreach (IFormattedText? snippet in text)
         {
             if (snippet?.Text == null)
+            {
                 continue;
+            }
 
             // track surrounding spaces for combined translations
             bool startSpace = snippet.Text.StartsWith(" ");
@@ -64,9 +68,14 @@ internal static class DrawTextHelper
                 // get word
                 string word = rawWords[i];
                 if (startSpace && i == 0)
+                {
                     word = $" {word}";
+                }
+
                 if (endSpace && i == last)
+                {
                     word += " ";
+                }
 
                 // split on newlines
                 string wordPart = word;
@@ -88,7 +97,9 @@ internal static class DrawTextHelper
 
                 // add remaining word (after newline split)
                 if (wordPart.Length > 0)
+                {
                     words.Add(wordPart);
+                }
             }
 
             // draw words to screen
@@ -106,18 +117,27 @@ internal static class DrawTextHelper
                     isFirstOfLine = true;
                 }
                 if (word == Environment.NewLine)
+                {
                     continue;
+                }
 
                 // draw text
                 Vector2 wordPosition = new Vector2(position.X + xOffset + prependSpace, position.Y + yOffset);
                 if (snippet.Bold)
+                {
                     Utility.drawBoldText(batch, word, font, wordPosition, snippet.Color ?? Color.Black, scale);
+                }
                 else
+                {
                     batch.DrawString(font, word, wordPosition, snippet.Color ?? Color.Black, 0, Vector2.Zero, scale, SpriteEffects.None, 1);
+                }
 
                 // update draw values
                 if (xOffset + wordWidth + prependSpace > blockWidth)
+                {
                     blockWidth = xOffset + wordWidth + prependSpace;
+                }
+
                 xOffset += wordWidth + prependSpace;
                 isFirstOfLine = false;
             }

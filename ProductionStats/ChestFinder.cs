@@ -88,11 +88,15 @@ internal class ChestFinder(IMultiplayerHelper multiplayer)
     {
         // main farmhouse or cabin
         if (location is FarmHouse house && house.fridgePosition != Point.Zero)
+        {
             return house.fridge.Value;
+        }
 
         // island farmhouse
         if (location is IslandFarmHouse islandHouse && islandHouse.visited.Value)
+        {
             return islandHouse.fridge.Value;
+        }
 
         return null;
     }
