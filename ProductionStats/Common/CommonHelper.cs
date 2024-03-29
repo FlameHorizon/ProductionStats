@@ -45,7 +45,9 @@ internal class CommonHelper
             );
 
         if (includeTempLevels)
+        {
             locations = locations.Concat(MineShaft.activeMines).Concat(VolcanoDungeon.activeLevels);
+        }
 
         return locations;
     }
