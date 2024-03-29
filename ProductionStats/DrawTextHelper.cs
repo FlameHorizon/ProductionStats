@@ -1,4 +1,6 @@
-﻿using Microsoft.Xna.Framework;
+﻿// derived from code by Jesse Plamondon-Willard under MIT license: https://github.com/Pathoschild/StardewMods
+
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ProductionStats.Common;
 using ProductionStats.Framework;

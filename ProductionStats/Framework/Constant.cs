@@ -1,4 +1,6 @@
-﻿using StardewValley;
+﻿// derived from code by Jesse Plamondon-Willard under MIT license: https://github.com/Pathoschild/StardewMods
+
+using StardewValley;
 
 namespace ProductionStats.Framework
 {

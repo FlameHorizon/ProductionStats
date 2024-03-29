@@ -1,4 +1,6 @@
-﻿using StardewModdingAPI;
+﻿// derived from code by Jesse Plamondon-Willard under MIT license: https://github.com/Pathoschild/StardewMods
+
+using StardewModdingAPI;
 using StardewModdingAPI.Utilities;
 using System.Runtime.Serialization;
 

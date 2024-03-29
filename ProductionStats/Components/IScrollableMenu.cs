@@ -1,4 +1,6 @@
-﻿namespace ProductionStats.Components;
+﻿// derived from code by Jesse Plamondon-Willard under MIT license: https://github.com/Pathoschild/StardewMods
+
+namespace ProductionStats.Components;
 
 /// <summary>
 ///     A Lookup Anything menu which supports scrolling.
