@@ -115,7 +115,12 @@ internal class ModEntry : Mod
         // sort items
         SortOrder sortOrder = _sortOrders.Dequeue();
         menu.ApplySort(sortOrder);
-        Game1.addHUDMessage(new($"View sorted by {sortOrder.GetDescription()}"));
+        HUDMessage message = new($"View sorted by {sortOrder.GetDescription()}", 500f)
+        {
+            noIcon = true,
+        };
+
+        Game1.addHUDMessage(message);
         _sortOrders.Enqueue(sortOrder);
     }
 
