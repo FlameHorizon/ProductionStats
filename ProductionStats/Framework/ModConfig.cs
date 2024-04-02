@@ -6,6 +6,9 @@ namespace ProductionStats.Framework;
 
 internal class ModConfig
 {
+    /// <summary>
+    /// The key bindings.
+    /// </summary>
     public ModConfigKeys Controls { get; set; } = new();
     
     /// <param name="context">The deserialization context.</param>

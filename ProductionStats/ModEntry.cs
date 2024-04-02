@@ -35,10 +35,10 @@ internal class ModEntry : Mod
         SortOrder.DescendingByCount,
     ]);
 
-    /// <summary>The configure key bindings.</summary>
-    private ModConfigKeys _keys = new();
-
     private ModConfig _config = null!; // Set in Entry;
+
+    /// <summary>The configure key bindings.</summary>
+    private ModConfigKeys _keys => _config.Controls;
 
     /// <summary>The mod entry point, called after the mod is first loaded.</summary>
     /// <param name="helper">
@@ -47,8 +47,7 @@ internal class ModEntry : Mod
     /// </param>
     public override void Entry(IModHelper helper)
     {
-        _config = helper.ReadConfig<ModConfig>(); 
-        _keys = Helper.ReadConfig<ModConfigKeys>();
+        _config = helper.ReadConfig<ModConfig>();
         _chestFinder = new ChestFinder(helper.Multiplayer);
 
         // hook up events
