@@ -22,6 +22,19 @@ internal class ModEntry : Mod
     /// </summary>
     private readonly PerScreen<Stack<IClickableMenu>> _previousMenus = new(() => new());
 
+    /// <summary>
+    ///     Sort options which can be applied to the menu and change order in 
+    ///     which items are shown.
+    /// </summary>
+    private readonly Queue<SortOrder> _sortOrders = new(
+    [
+        SortOrder.None,
+        SortOrder.AscendingByName,
+        SortOrder.DescendingByName,
+        SortOrder.AscendingByCount,
+        SortOrder.DescendingByCount,
+    ]);
+
     /// <summary>The configure key bindings.</summary>
     private ModConfigKeys _keys = new();
 
@@ -60,9 +73,18 @@ internal class ModEntry : Mod
     /// <param name="e">The event data.</param>
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
+        if (Context.IsWorldReady == false)
+        {
+            return;
+        }
+
         if (_keys.ToggleMenu.JustPressed())
         {
             ToggleMenu();
+        }
+        else if (_keys.Sort.JustPressed())
+        {
+            Sort();
         }
         else if (_keys.ScrollUp.JustPressed())
         {
@@ -80,6 +102,26 @@ internal class ModEntry : Mod
         {
             (Game1.activeClickableMenu as IScrollableMenu)?.ScrollDown(Game1.activeClickableMenu.height);
         }
+    }
+
+    private void Sort()
+    {
+        if (Game1.activeClickableMenu is not ProductionMenu menu)
+        {
+            Monitor.Log("Sort can't be applied on this menu.");
+            return;
+        }
+
+        // sort items
+        SortOrder sortOrder = _sortOrders.Dequeue();
+        menu.ApplySort(sortOrder);
+        HUDMessage message = new($"View sorted by {sortOrder.GetDescription()}", 500f)
+        {
+            noIcon = true,
+        };
+
+        Game1.addHUDMessage(message);
+        _sortOrders.Enqueue(sortOrder);
     }
 
     private void ToggleMenu()
@@ -122,15 +164,14 @@ internal class ModEntry : Mod
             .ToList()
             .ForEach(x => Monitor.Log(x));
 
-        PushMenu(
-            new ProductionMenu(
-                itemStocks: items,
-                monitor: Monitor,
-                reflectionHelper: Helper.Reflection,
-                scroll: 160,
-                forceFullScreen: false
-            )
-        );
+        ProductionMenu menu = new(
+            itemStocks: items,
+            monitor: Monitor,
+            reflectionHelper: Helper.Reflection,
+            scroll: 160,
+            forceFullScreen: false);
+
+        PushMenu(menu);
     }
 
     /// <summary>
@@ -143,10 +184,8 @@ internal class ModEntry : Mod
         if (ShouldRestoreMenu(Game1.activeClickableMenu))
         {
             _previousMenus.Value.Push(Game1.activeClickableMenu);
-            Helper
-                .Reflection
-                .GetField<IClickableMenu>(
-                    typeof(Game1), "_activeClickableMenu")
+            Helper.Reflection
+                .GetField<IClickableMenu>(typeof(Game1), "_activeClickableMenu")
                 .SetValue(menu); // bypass Game1.activeClickableMenu, which disposes the previous menu
         }
         else
@@ -175,8 +214,8 @@ internal class ModEntry : Mod
         var items = _chestFinder.GetChests()
                 .Select(x => x.GetItemsForCurrentPlayer())
                 .SelectMany(x => x) // Make list flat 
-                .Where(x => x is not null)
-                .Concat(Game1.player.Items.Where(x => x is not null));
+                .Concat(Game1.player.Items)
+                .Where(x => x is not null);
 
         var result = new Dictionary<string, ItemStock>();
         foreach (Item? item in items)
@@ -197,6 +236,7 @@ internal class ModEntry : Mod
         if (Game1.activeClickableMenu is ProductionMenu menu)
         {
             menu.QueueExit();
+            Game1.displayHUD = true;
         }
     }
 }

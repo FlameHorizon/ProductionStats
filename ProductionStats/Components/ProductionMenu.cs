@@ -52,12 +52,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
         ColorDestinationBlend = Blend.InverseSourceAlpha
     };
 
-    /// <summary>
-    ///     Whether the game HUD was enabled when the menu was opened.
-    /// </summary>
-    private readonly bool _wasHudEnabled;
-
-    /// <summary>
+       /// <summary>
     ///     Whether the game's draw mode has been validated for compatibility.
     /// </summary>
     private bool _validatedDrawMode;
@@ -67,6 +62,13 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
 
     /// <summary>The maximum pixels to scroll.</summary>
     private int _maxScroll;
+
+    /// <summary>
+    /// Defines how items should be sorted when displayed. By defualt - 
+    /// order depends on when item was retrieved from memory.
+    /// </summary>
+    private Func<IEnumerable<ItemStock>, IEnumerable<ItemStock>> _sortOrder
+        = (IEnumerable<ItemStock> items) => items;
 
     public ProductionMenu(
         IEnumerable<ItemStock> itemStocks,
@@ -80,7 +82,6 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
         _reflection = reflectionHelper;
         _scrollAmount = scroll;
         _forceFullScreen = forceFullScreen;
-        _wasHudEnabled = Game1.displayHUD;
 
         // add scroll buttons
         _scrollUpButton = new ClickableTextureComponent(
@@ -337,7 +338,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
                 topOffset -= _currentScroll;
 
                 bool leftSide = true;
-                foreach (ItemStock itemStock in _itemStocks)
+                foreach (ItemStock itemStock in _sortOrder(_itemStocks))
                 {
                     leftOffset = leftSide ? gutter : leftOffset + 500;
 
@@ -477,6 +478,18 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
     /// <summary>Perform cleanup specific to the lookup menu.</summary>
     private void CleanupImpl()
     {
-        Game1.displayHUD = _wasHudEnabled;
+        Game1.displayHUD = true;
+    }
+
+    internal void ApplySort(SortOrder sortOrder)
+    {
+        _sortOrder = sortOrder switch
+        {
+            SortOrder.DescendingByName => (IEnumerable<ItemStock> items) => items.OrderByDescending(x => x.Item.Name),
+            SortOrder.AscendingByName => (IEnumerable<ItemStock> items) => items.OrderBy(x => x.Item.Name),
+            SortOrder.DescendingByCount => (IEnumerable<ItemStock> items ) => items.OrderByDescending(x => x.Count),
+            SortOrder.AscendingByCount => (IEnumerable<ItemStock> items) => items.OrderBy(x => x.Count),
+            _ => (IEnumerable<ItemStock> items) => items
+        };
     }
 }
