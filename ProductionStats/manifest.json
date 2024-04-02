@@ -1,7 +1,7 @@
 {
   "Name": "Production Stats",
   "Author": "FlameHorizon",
-  "Version": "0.0.6",
+  "Version": "0.0.7",
   "MinimumApiVersion": "4.0.0",
   "Description": "View information about your production",
   "UniqueID": "FlameHorizon.ProductionStats",
