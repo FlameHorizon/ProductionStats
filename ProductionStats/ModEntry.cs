@@ -60,6 +60,11 @@ internal class ModEntry : Mod
     /// <param name="e">The event data.</param>
     private void OnButtonsChanged(object? sender, ButtonsChangedEventArgs e)
     {
+        if (Context.IsWorldReady == false)
+        {
+            return;
+        }
+
         if (_keys.ToggleMenu.JustPressed())
         {
             ToggleMenu();
