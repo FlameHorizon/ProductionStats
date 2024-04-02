@@ -35,8 +35,10 @@ internal class ModEntry : Mod
         SortOrder.DescendingByCount,
     ]);
 
+    private ModConfig _config = null!; // Set in Entry;
+
     /// <summary>The configure key bindings.</summary>
-    private ModConfigKeys _keys = new();
+    private ModConfigKeys _keys => _config.Controls;
 
     /// <summary>The mod entry point, called after the mod is first loaded.</summary>
     /// <param name="helper">
@@ -45,12 +47,53 @@ internal class ModEntry : Mod
     /// </param>
     public override void Entry(IModHelper helper)
     {
-        _keys = Helper.ReadConfig<ModConfigKeys>();
+        _config = helper.ReadConfig<ModConfig>();
         _chestFinder = new ChestFinder(helper.Multiplayer);
 
         // hook up events
+        helper.Events.GameLoop.GameLaunched += OnGameLaunched;
         helper.Events.Display.MenuChanged += OnMenuChanged;
         helper.Events.Input.ButtonsChanged += OnButtonsChanged;
+    }
+
+    private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
+    {
+        // get Generic Mod Config Menu's API (if it's installed)
+        var configMenu = Helper
+            .ModRegistry
+            .GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+
+        if (configMenu is null)
+            return;
+
+        // register mod
+        configMenu.Register(
+            mod: ModManifest,
+            reset: () => _config = new ModConfig(),
+            save: () => Helper.WriteConfig(_config)
+        );
+
+        configMenu.AddSectionTitle(
+            mod: ModManifest,
+            text: () => "Controls",
+            tooltip: () => "Section dedicated to interactions with this mod"
+        );
+
+        configMenu.AddKeybindList(
+            mod: ModManifest,
+            name: () => "Toggle menu",
+            tooltip: () => "Toggles menu which display number of items in player's possesion",
+            getValue: () => _config.Controls.ToggleMenu,
+            setValue: value => _config.Controls.ToggleMenu = value
+        );
+
+        configMenu.AddKeybindList(
+            mod: ModManifest,
+            name: () => "Change sort order",
+            tooltip: () => "Changes sorting order which is used to display player's item in menu",
+            getValue: () => _config.Controls.Sort,
+            setValue: value => _config.Controls.Sort = value
+        );
     }
 
     /// <inheritdoc cref="IDisplayEvents.MenuChanged"/>
