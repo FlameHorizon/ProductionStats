@@ -16,6 +16,12 @@ By defualt, to display items you have to press `F5` key once. To hide the menu, 
 
 Number of items is always refreshed when you enter the menu.
 
+## Sorting
+
+You can sort items by the name or by the count in ascending and descending order by pressing `s` while in the menu.
+
+![Sorting](/imgs/sorting.gif)
+
 # Keybindings
 
 If you wish to change default keybindings you can edit `config.json` file which is in this mod directory. More on this topic in [SDV Wiki - Configure Mods](https://stardewvalleywiki.com/Modding:Player_Guide/Getting_Started#Configure_mods) 
