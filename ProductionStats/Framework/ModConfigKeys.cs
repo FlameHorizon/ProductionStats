@@ -9,6 +9,7 @@ namespace ProductionStats.Framework;
 internal class ModConfigKeys
 {
     public KeybindList ToggleMenu { get; set; } = new(SButton.F5);
+    public KeybindList Sort { get; set; } = new(SButton.S);
     public KeybindList ScrollUp { get; set; } = new(SButton.Up);
     public KeybindList ScrollDown { get; set; } = new(SButton.Down);
     public KeybindList PageUp { get; set; } = new(SButton.PageUp);
@@ -20,6 +21,7 @@ internal class ModConfigKeys
     public void OnDeserialized(StreamingContext context)
     {
         ToggleMenu ??= new KeybindList();
+        Sort ??= new KeybindList();
         ScrollUp ??= new KeybindList();
         ScrollDown ??= new KeybindList();
         PageUp ??= new KeybindList();
