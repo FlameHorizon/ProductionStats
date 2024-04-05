@@ -277,14 +277,14 @@ internal class ModEntry : Mod
 
     private IEnumerable<ItemStock> GetItemSubjects()
     {
-        var items = _chestFinder.GetChests()
+        IEnumerable<Item> items = _chestFinder.GetChests()
                 .Select(x => x.GetItemsForCurrentPlayer())
                 .SelectMany(x => x) // Make list flat 
                 .Concat(Game1.player.Items)
                 .Where(x => x is not null);
 
         var result = new Dictionary<string, ItemStock>();
-        foreach (Item? item in items)
+        foreach (Item item in items)
         {
             if (result.ContainsKey(item.Name) == false)
             {
