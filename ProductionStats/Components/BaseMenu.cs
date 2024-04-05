@@ -1,8 +1,8 @@
 ﻿// derived from code by Jesse Plamondon-Willard under MIT license: https://github.com/Pathoschild/StardewMods
 
-using StardewValley.Menus;
-using StardewValley;
 using Microsoft.Xna.Framework;
+using StardewValley;
+using StardewValley.Menus;
 
 namespace ProductionStats.Components;
 

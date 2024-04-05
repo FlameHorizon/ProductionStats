@@ -15,28 +15,19 @@ internal static class EnumExtensions
     /// </returns>
     public static string GetDescription(this Enum value)
     {
-        Type? type = value.GetType();
-
-        if (type == null)
-            return string.Empty;
-
-        string? name = Enum.GetName(type, value);
-        if (name == null)
+        string? name = Enum.GetName(value.GetType(), value);
+        if (name is null)
         {
             return string.Empty;
         }
 
-        FieldInfo? field = type.GetField(name);
-        if (field == null)
+        FieldInfo? field = value.GetType().GetField(name);
+        if (field is null)
         {
             return string.Empty;
         }
 
-        if (Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) is DescriptionAttribute attr)
-        {
-            return attr.Description;
-        }
-
-        return string.Empty;
+        DescriptionAttribute? attr = Attribute.GetCustomAttribute(field, typeof(DescriptionAttribute)) as DescriptionAttribute;
+        return attr?.Description ?? string.Empty;
     }
 }

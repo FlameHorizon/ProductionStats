@@ -12,9 +12,15 @@ This mod allows you to lookup how much items you have across various of storages
 
 # Usage
 
-By defualt, to display items you have to press `F5` key once. To hide the menu, press `F5` once more.
+By default, to display items you have to press `F5` key once. To hide the menu, press `F5` or `Escape`.
 
 Number of items is always refreshed when you enter the menu.
+
+## Filtering
+
+You can filter items are shown by clicking on search text box and filtering them by name. You can also press `f` to focus on search text box.
+
+![Filtering](/imgs/filtering.gif)
 
 ## Sorting
 

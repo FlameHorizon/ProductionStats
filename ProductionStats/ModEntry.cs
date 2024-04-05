@@ -82,7 +82,7 @@ internal class ModEntry : Mod
         configMenu.AddKeybindList(
             mod: ModManifest,
             name: () => "Toggle menu",
-            tooltip: () => "Toggles menu which display number of items in player's possesion",
+            tooltip: () => "Toggles menu which display number of items in player's possession",
             getValue: () => _config.Controls.ToggleMenu,
             setValue: value => _config.Controls.ToggleMenu = value
         );
@@ -93,6 +93,14 @@ internal class ModEntry : Mod
             tooltip: () => "Changes sorting order which is used to display player's item in menu",
             getValue: () => _config.Controls.Sort,
             setValue: value => _config.Controls.Sort = value
+        );
+        
+        configMenu.AddKeybindList(
+            mod: ModManifest,
+            name: () => "Focus filter search",
+            tooltip: () => "Focus on search text box to allow typing in it.",
+            getValue: () => _config.Controls.FocusSearch,
+            setValue: value => _config.Controls.FocusSearch = value
         );
     }
 
@@ -129,6 +137,10 @@ internal class ModEntry : Mod
         {
             Sort();
         }
+        else if (_keys.FocusSearch.JustPressed())
+        {
+            FocusSearch();
+        }
         else if (_keys.ScrollUp.JustPressed())
         {
             (Game1.activeClickableMenu as IScrollableMenu)?.ScrollUp();
@@ -147,6 +159,17 @@ internal class ModEntry : Mod
         }
     }
 
+    private void FocusSearch()
+    {
+        if (Game1.activeClickableMenu is not ProductionMenu menu)
+        {
+            Monitor.Log("Focus search can't be applied on this menu.");
+            return;
+        }
+
+        menu.FocusSearch();
+    }
+
     private void Sort()
     {
         if (Game1.activeClickableMenu is not ProductionMenu menu)
@@ -155,8 +178,16 @@ internal class ModEntry : Mod
             return;
         }
 
+        // If we would allow sorting while focused on search textbox
+        // would never print letter S in textbox.
+        if (menu.IsSearchTextBoxFocused)
+        {
+            return;
+        }
+
         // sort items
         SortOrder sortOrder = _sortOrders.Dequeue();
+
         menu.ApplySort(sortOrder);
         HUDMessage message = new($"View sorted by {sortOrder.GetDescription()}", 500f)
         {
@@ -179,7 +210,7 @@ internal class ModEntry : Mod
 
     private void ShowMenu()
     {
-        Monitor.Log("Recieved a open menu request");
+        Monitor.Log("Received a open menu request");
         try
         {
             // get target
@@ -254,14 +285,14 @@ internal class ModEntry : Mod
 
     private IEnumerable<ItemStock> GetItemSubjects()
     {
-        var items = _chestFinder.GetChests()
+        IEnumerable<Item> items = _chestFinder.GetChests()
                 .Select(x => x.GetItemsForCurrentPlayer())
                 .SelectMany(x => x) // Make list flat 
                 .Concat(Game1.player.Items)
                 .Where(x => x is not null);
 
         var result = new Dictionary<string, ItemStock>();
-        foreach (Item? item in items)
+        foreach (Item item in items)
         {
             if (result.ContainsKey(item.Name) == false)
             {

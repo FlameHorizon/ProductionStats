@@ -14,6 +14,7 @@ internal class ModConfigKeys
     public KeybindList ScrollDown { get; set; } = new(SButton.Down);
     public KeybindList PageUp { get; set; } = new(SButton.PageUp);
     public KeybindList PageDown { get; set; } = new(SButton.PageDown);
+    public KeybindList FocusSearch { get; set; } = new(SButton.F);
 
     /// <summary>Normalize the model after it's deserialized.</summary>
     /// <param name="context">The deserialization context.</param>
@@ -26,5 +27,6 @@ internal class ModConfigKeys
         ScrollDown ??= new KeybindList();
         PageUp ??= new KeybindList();
         PageDown ??= new KeybindList();
+        FocusSearch ??= new KeybindList();
     }
 }
