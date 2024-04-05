@@ -146,7 +146,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
     {
         if (key.Equals(Keys.Escape))
         {
-            if (IsFiltering)
+            if (IsSearchTextBoxFocused)
             {
                 _searchTextBox.Deselect();
             }
