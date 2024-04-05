@@ -18,6 +18,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
     private readonly IMonitor _monitor;
     private readonly int _scrollAmount;
     private readonly bool _forceFullScreen;
+
     /// <summary>The aspect ratio of the page background.</summary>
     private readonly Vector2 _aspectRatio = new(Sprites.Letter.Sprite.Width, Sprites.Letter.Sprite.Height);
 
@@ -52,7 +53,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
         ColorDestinationBlend = Blend.InverseSourceAlpha
     };
 
-       /// <summary>
+    /// <summary>
     ///     Whether the game's draw mode has been validated for compatibility.
     /// </summary>
     private bool _validatedDrawMode;
@@ -70,6 +71,12 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
     private Func<IEnumerable<ItemStock>, IEnumerable<ItemStock>> _sortOrder
         = (IEnumerable<ItemStock> items) => items;
 
+    /// <summary>The current search results.</summary>
+    private IEnumerable<ItemStock> _searchResults = [];
+
+    /// <summary>The search input box.</summary>
+    private readonly SearchTextBox _searchTextBox;
+
     public ProductionMenu(
         IEnumerable<ItemStock> itemStocks,
         IMonitor monitor,
@@ -82,6 +89,9 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
         _reflection = reflectionHelper;
         _scrollAmount = scroll;
         _forceFullScreen = forceFullScreen;
+
+        // create search textbox
+        _searchTextBox = new SearchTextBox(Game1.smallFont, Color.Black);
 
         // add scroll buttons
         _scrollUpButton = new ClickableTextureComponent(
@@ -98,9 +108,53 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
 
         // update layout
         UpdateLayout();
+        _searchTextBox.OnChanged += (_, text) => ReceiveSearchTextboxChanged(text);
 
         // hide game HUD
         Game1.displayHUD = false;
+    }
+
+    /// <summary>
+    /// Indicates if we are filtering or not. If we are, they disable sorting.
+    /// </summary>
+    public bool IsFiltering => string.IsNullOrEmpty(_searchTextBox.Text) == false;
+
+    public bool IsSearchTextBoxFocused => _searchTextBox.IsFocused;
+
+    private void ReceiveSearchTextboxChanged(string search)
+    {
+        // get search words
+        string[] words = (search ?? "").Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+        if (!words.Any())
+        {
+            _searchResults = _itemStocks;
+            return;
+        }
+
+        // get results
+        _searchResults = _itemStocks
+            .Where(entry => words.All(word => entry.Item.DisplayName.IndexOf(word, StringComparison.OrdinalIgnoreCase) >= 0))
+            .Select(entry => (entry,
+                words.Select(word => entry.Item.DisplayName.IndexOf(word, StringComparison.OrdinalIgnoreCase))
+                .Min()))
+            .OrderBy(x => x.Item2)
+            .Select(x => x.entry)
+            .ToList();
+    }
+
+    public override void receiveKeyPress(Keys key)
+    {
+        if (key.Equals(Keys.Escape))
+        {
+            if (IsFiltering)
+            {
+                _searchTextBox.Deselect();
+            }
+            else
+            {
+                exitThisMenu();
+            }
+        }
     }
 
     /// <summary>Update the layout dimensions based on the current game scale.</summary>
@@ -219,8 +273,17 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
     /// <param name="y">The y-position of the cursor.</param>
     public void HandleLeftClick(int x, int y)
     {
+        if (_searchTextBox.Bounds.Contains(x, y))
+        {
+            _searchTextBox.Select();
+        }
+        else
+        {
+            _searchTextBox.Deselect();
+        }
+
         // close menu when clicked outside
-        if (!isWithinBounds(x, y))
+        if (isWithinBounds(x, y) == false)
         {
             exitThisMenu();
         }
@@ -338,7 +401,22 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
                 topOffset -= _currentScroll;
 
                 bool leftSide = true;
-                foreach (ItemStock itemStock in _sortOrder(_itemStocks))
+
+                float wrapWidth = width - leftOffset - gutter;
+                _searchTextBox.Bounds = new Rectangle(
+                            x: x + (int)leftOffset,
+                            y: y + (int)topOffset,
+                            width: (int)wrapWidth,
+                            height: _searchTextBox.Bounds.Height);
+
+                _searchTextBox.Draw(contentBatch);
+                topOffset += _searchTextBox.Bounds.Height;
+
+                IEnumerable<ItemStock> items = IsFiltering
+                    ? _searchResults ?? _itemStocks
+                    : _itemStocks;
+
+                foreach (ItemStock itemStock in _sortOrder(items))
                 {
                     leftOffset = leftSide ? gutter : leftOffset + 500;
 
@@ -354,22 +432,20 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
 
                     leftOffset += 80;
 
-                    float wrapWidth = width - leftOffset - gutter;
-
                     // drawing item count
                     string item = $"{itemStock.Count}x ";
-                    Vector2 itemCountPosition =  new(x + leftOffset, y + topOffset + 15);
+                    Vector2 itemCountPosition = new(x + leftOffset, y + topOffset + 15);
                     Vector2 itemCountSize = contentBatch.DrawTextBlock(
                             font: font,
                             text: $"{item}",
                             position: itemCountPosition,
                             wrapWidth: wrapWidth);
-                    
+
                     // drawing item name
                     Vector2 namePosition = new(
                         x + leftOffset + itemCountSize.X + spaceWidth,
                         y + topOffset + 15);
-                    
+
                     Vector2 nameSize = contentBatch.DrawTextBlock(
                         font: font,
                         text: $"{itemStock.Item.DisplayName}",
@@ -414,7 +490,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
                 && ex.StackTrace?.Contains("Microsoft.Xna.Framework.Graphics.GraphicsDevice.set_ScissorRectangle") == true)
             {
                 _monitor.Log("The viewport size seems to be inaccurate. " +
-                    "Enabling compatibility mode; lookup menu may be misaligned.", 
+                    "Enabling compatibility mode; lookup menu may be misaligned.",
                     LogLevel.Warn);
 
                 _monitor.Log(ex.ToString());
@@ -471,25 +547,29 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
     /// <summary>Clean up after the menu when it's disposed.</summary>
     public void Dispose()
     {
+        _searchTextBox.Dispose();
         _contentBlendState.Dispose();
         CleanupImpl();
     }
 
     /// <summary>Perform cleanup specific to the lookup menu.</summary>
-    private void CleanupImpl()
-    {
-        Game1.displayHUD = true;
-    }
+    private static void CleanupImpl() => Game1.displayHUD = true;
 
+    /// <summary>
+    /// Applies sorting order to items displayed in the menu.
+    /// </summary>
+    /// <param name="sortOrder">Sorting order to apply.</param>
     internal void ApplySort(SortOrder sortOrder)
     {
         _sortOrder = sortOrder switch
         {
             SortOrder.DescendingByName => (IEnumerable<ItemStock> items) => items.OrderByDescending(x => x.Item.Name),
             SortOrder.AscendingByName => (IEnumerable<ItemStock> items) => items.OrderBy(x => x.Item.Name),
-            SortOrder.DescendingByCount => (IEnumerable<ItemStock> items ) => items.OrderByDescending(x => x.Count),
+            SortOrder.DescendingByCount => (IEnumerable<ItemStock> items) => items.OrderByDescending(x => x.Count),
             SortOrder.AscendingByCount => (IEnumerable<ItemStock> items) => items.OrderBy(x => x.Count),
             _ => (IEnumerable<ItemStock> items) => items
         };
     }
+
+    internal void FocusSearch() => _searchTextBox.Select();
 }

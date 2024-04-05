@@ -129,6 +129,10 @@ internal class ModEntry : Mod
         {
             Sort();
         }
+        else if (_keys.FocusSearch.JustPressed())
+        {
+            FocusSearch();
+        }
         else if (_keys.ScrollUp.JustPressed())
         {
             (Game1.activeClickableMenu as IScrollableMenu)?.ScrollUp();
@@ -147,6 +151,17 @@ internal class ModEntry : Mod
         }
     }
 
+    private void FocusSearch()
+    {
+        if (Game1.activeClickableMenu is not ProductionMenu menu)
+        {
+            Monitor.Log("Focus search an't be applied on this menu.");
+            return;
+        }
+
+        menu.FocusSearch();
+    }
+
     private void Sort()
     {
         if (Game1.activeClickableMenu is not ProductionMenu menu)
@@ -155,8 +170,14 @@ internal class ModEntry : Mod
             return;
         }
 
+        if (menu.IsSearchTextBoxFocused)
+        {
+            return;
+        }
+
         // sort items
         SortOrder sortOrder = _sortOrders.Dequeue();
+
         menu.ApplySort(sortOrder);
         HUDMessage message = new($"View sorted by {sortOrder.GetDescription()}", 500f)
         {
