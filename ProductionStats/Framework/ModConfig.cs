@@ -10,7 +10,7 @@ internal class ModConfig
     /// The key bindings.
     /// </summary>
     public ModConfigKeys Controls { get; set; } = new();
-    
+
     /// <param name="context">The deserialization context.</param>
     [OnDeserialized]
     public void OnDeserialized(StreamingContext context)

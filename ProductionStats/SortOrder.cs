@@ -17,10 +17,10 @@ internal enum SortOrder
 
     [Description("Count (desc)")]
     AscendingByCount,
-    
+
     [Description("Count (asc)")]
     DescendingByCount,
-    
+
     [Description("None")]
     None
 }

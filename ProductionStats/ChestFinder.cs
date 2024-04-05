@@ -1,14 +1,14 @@
 ﻿// derived from code by Jesse Plamondon-Willard under MIT license: https://github.com/Pathoschild/StardewMods
 
-using StardewModdingAPI;
-using StardewValley.Buildings;
-using StardewValley.Locations;
-using StardewValley.Objects;
-using StardewValley;
-using SObject = StardewValley.Object;
 using Microsoft.Xna.Framework;
 using ProductionStats.Common;
 using ProductionStats.Containers;
+using StardewModdingAPI;
+using StardewValley;
+using StardewValley.Buildings;
+using StardewValley.Locations;
+using StardewValley.Objects;
+using SObject = StardewValley.Object;
 
 namespace ProductionStats;
 
@@ -22,7 +22,7 @@ internal class ChestFinder(IMultiplayerHelper multiplayer)
             .Select(x => x.objects.Pairs)
             .SelectMany(x => x)
             .Select(x => x.Value);
-        
+
         // chests in location
         foreach (SObject obj in objects)
         {
