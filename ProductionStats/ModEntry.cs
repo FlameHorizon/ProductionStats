@@ -155,7 +155,7 @@ internal class ModEntry : Mod
     {
         if (Game1.activeClickableMenu is not ProductionMenu menu)
         {
-            Monitor.Log("Focus search an't be applied on this menu.");
+            Monitor.Log("Focus search can't be applied on this menu.");
             return;
         }
 
