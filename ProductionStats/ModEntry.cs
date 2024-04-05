@@ -170,6 +170,8 @@ internal class ModEntry : Mod
             return;
         }
 
+        // If we would allow sorting while focused on search textbox
+        // would never print letter S in textbox.
         if (menu.IsSearchTextBoxFocused)
         {
             return;
