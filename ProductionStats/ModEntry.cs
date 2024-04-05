@@ -202,7 +202,7 @@ internal class ModEntry : Mod
 
     private void ShowMenu()
     {
-        Monitor.Log("Recieved a open menu request");
+        Monitor.Log("Received a open menu request");
         try
         {
             // get target
