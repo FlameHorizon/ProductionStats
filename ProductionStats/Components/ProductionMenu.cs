@@ -287,7 +287,6 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
         {
             exitThisMenu();
         }
-
         // scroll up or down
         else if (_scrollUpButton.containsPoint(x, y))
         {
