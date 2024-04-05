@@ -82,7 +82,7 @@ internal class ModEntry : Mod
         configMenu.AddKeybindList(
             mod: ModManifest,
             name: () => "Toggle menu",
-            tooltip: () => "Toggles menu which display number of items in player's possesion",
+            tooltip: () => "Toggles menu which display number of items in player's possession",
             getValue: () => _config.Controls.ToggleMenu,
             setValue: value => _config.Controls.ToggleMenu = value
         );
