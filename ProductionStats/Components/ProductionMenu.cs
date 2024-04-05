@@ -119,7 +119,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
     /// </summary>
     public bool IsFiltering => string.IsNullOrEmpty(_searchTextBox.Text) == false;
 
-    public bool IsSearchTextBoxFocused => _searchTextBox.IsFocused;
+    public bool IsSearchTextBoxFocused => _searchTextBox.Selected;
 
     private void ReceiveSearchTextboxChanged(string search)
     {

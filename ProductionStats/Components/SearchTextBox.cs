@@ -47,7 +47,7 @@ namespace ProductionStats.Components
 
         public string Text => _textbox.Text;
 
-        public bool IsFocused => _textbox.Selected;
+        public bool Selected => _textbox.Selected;
 
         internal void Draw(SpriteBatch batch)
         {
@@ -72,14 +72,8 @@ namespace ProductionStats.Components
             _textbox.Selected = false;
         }
 
-        internal void Select()
-        {
-            _textbox.Selected = true;
-        }
+        internal void Select() => _textbox.Selected = true;
 
-        internal void Deselect()
-        {
-            _textbox.Selected = false;
-        }
+        internal void Deselect() => _textbox.Selected = false;
     }
 }
