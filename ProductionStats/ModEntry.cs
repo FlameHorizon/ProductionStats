@@ -94,6 +94,14 @@ internal class ModEntry : Mod
             getValue: () => _config.Controls.Sort,
             setValue: value => _config.Controls.Sort = value
         );
+        
+        configMenu.AddKeybindList(
+            mod: ModManifest,
+            name: () => "Focus filter search",
+            tooltip: () => "Focus on search text box to allow typing in it.",
+            getValue: () => _config.Controls.FocusSearch,
+            setValue: value => _config.Controls.FocusSearch = value
+        );
     }
 
     /// <inheritdoc cref="IDisplayEvents.MenuChanged"/>
