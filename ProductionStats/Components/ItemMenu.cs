@@ -12,7 +12,7 @@ using StardewValley.Menus;
 
 namespace ProductionStats.Components;
 
-internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
+internal class ItemMenu : BaseMenu, IScrollableMenu, IDisposable
 {
     private readonly IEnumerable<ItemStock> _itemStocks;
     private readonly IMonitor _monitor;
@@ -77,7 +77,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
     /// <summary>The search input box.</summary>
     private readonly SearchTextBox _searchTextBox;
 
-    public ProductionMenu(
+    public ItemMenu(
         IEnumerable<ItemStock> itemStocks,
         IMonitor monitor,
         IReflectionHelper reflectionHelper,

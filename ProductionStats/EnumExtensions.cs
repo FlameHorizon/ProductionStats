@@ -2,7 +2,7 @@
 using System.Reflection;
 
 namespace ProductionStats;
-
+// TODO: Change name from extensions to helper.
 internal static class EnumExtensions
 {
     /// <summary>

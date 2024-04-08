@@ -40,6 +40,11 @@ internal class ModEntry : Mod
     /// <summary>The configure key bindings.</summary>
     private ModConfigKeys _keys => _config.Controls;
 
+    /// <summary>
+    /// Tracks player's inventory to display useful metrics.
+    /// </summary>
+    private InventoryTracker _inventoryTracker = null!; // Set in OnSaveLoaded.
+
     /// <summary>The mod entry point, called after the mod is first loaded.</summary>
     /// <param name="helper">
     ///     Provides methods for interacting with the mod directory, 
@@ -52,14 +57,84 @@ internal class ModEntry : Mod
 
         // hook up events
         helper.Events.GameLoop.GameLaunched += OnGameLaunched;
+        helper.Events.GameLoop.ReturnedToTitle += OnReturnedToTitle;
+        helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
         helper.Events.Display.MenuChanged += OnMenuChanged;
         helper.Events.Input.ButtonsChanged += OnButtonsChanged;
+        helper.Events.Player.InventoryChanged += OnInventoryChanged;
+        helper.Events.World.ChestInventoryChanged += OnChestInventoryChanged;
+    }
+
+    private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
+    {
+        _inventoryTracker = new InventoryTracker(new InGameTimeProvider(), SDate.Now());
+    }
+
+    private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
+    {
+        _inventoryTracker.Reset();
+    }
+
+    private void OnChestInventoryChanged(object? sender, ChestInventoryChangedEventArgs e)
+    {
+        if (Context.IsWorldReady == false)
+        {
+            return;
+        }
+
+        // TODO: Allow only for local player to change inventory tracker.
+        HandleQuantityChanges(e.QuantityChanged);
+        HandleAdded(e.Added);
+        HandleRemoved(e.Removed);
+    }
+
+    private void OnInventoryChanged(object? sender, InventoryChangedEventArgs e)
+    {
+        if (Context.IsWorldReady == false)
+        {
+            return;
+        }
+
+        // track only local player's inventory change.
+        if (e.IsLocalPlayer == false)
+        {
+            return;
+        }
+
+        HandleQuantityChanges(e.QuantityChanged);
+        HandleAdded(e.Added);
+        HandleRemoved(e.Removed);
+    }
+
+    private void HandleAdded(IEnumerable<Item> items)
+    {
+        foreach (Item item in items)
+        {
+            _inventoryTracker.Add(item, item.Stack);
+        }
+    }
+
+    private void HandleRemoved(IEnumerable<Item> items)
+    {
+        foreach (Item item in items)
+        {
+            _inventoryTracker.Add(item, -item.Stack);
+        }
+    }
+
+    private void HandleQuantityChanges(IEnumerable<ItemStackSizeChange> items)
+    {
+        // changes in size of the stack
+        foreach (ItemStackSizeChange change in items)
+        {
+            _inventoryTracker.Add(change.Item, change.NewSize - change.OldSize);
+        }
     }
 
     private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
     {
         // get Generic Mod Config Menu's API (if it's installed)
-        var configMenu = Helper
+        IGenericModConfigMenuApi? configMenu = Helper
             .ModRegistry
             .GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
 
@@ -94,7 +169,7 @@ internal class ModEntry : Mod
             getValue: () => _config.Controls.Sort,
             setValue: value => _config.Controls.Sort = value
         );
-        
+
         configMenu.AddKeybindList(
             mod: ModManifest,
             name: () => "Focus filter search",
@@ -112,7 +187,7 @@ internal class ModEntry : Mod
         Monitor.Log("Restoring the previous menu");
         // restore the previous menu if it was hidden to show the lookup UI
         if (e.NewMenu == null
-            && (e.OldMenu is ProductionMenu)
+            && (e.OldMenu is ItemMenu)
             && _previousMenus.Value.Count != 0)
         {
             Game1.activeClickableMenu = _previousMenus.Value.Pop();
@@ -141,6 +216,10 @@ internal class ModEntry : Mod
         {
             FocusSearch();
         }
+        else if (_keys.ToggleProductionMenu.JustPressed())
+        {
+            ToggleProductionMenu();
+        }
         else if (_keys.ScrollUp.JustPressed())
         {
             (Game1.activeClickableMenu as IScrollableMenu)?.ScrollUp();
@@ -157,22 +236,110 @@ internal class ModEntry : Mod
         {
             (Game1.activeClickableMenu as IScrollableMenu)?.ScrollDown(Game1.activeClickableMenu.height);
         }
+        //Debugging feature
+        else if (_keys.DisplayDebugInfo.JustPressed())
+        {
+            DisplayCurrentlyTrackedItems();
+        }
+    }
+
+    private void ToggleProductionMenu()
+    {
+        if (Game1.activeClickableMenu is ProductionMenu)
+        {
+            HideProductionMenu();
+            return;
+        }
+        ShowProductionMenu();
+    }
+
+    private void ShowProductionMenu()
+    {
+        Monitor.Log("Received a open production menu request");
+        try
+        {
+            // get items
+            IEnumerable<(Item Item, int Count)> production = _inventoryTracker.ProducedToday();
+            if (production.Any() == false)
+            {
+                Monitor.Log($"Nothing got produced today");
+                return;
+            }
+
+            // show production UI
+            Monitor.Log($"Found {production.Count()} items to show");
+            ShowProductionMenuFor(production);
+        }
+        catch (Exception ex)
+        {
+            Monitor.Log($"An error occurred. {ex.Message}");
+            throw;
+        }
+    }
+
+    private void ShowProductionMenuFor(IEnumerable<(Item Item, int Count)> production)
+    {
+        production.Select(x => $"Showing {x.Item}::{x.Count}")
+            .ToList()
+            .ForEach(x => Monitor.Log(x));
+
+        ProductionMenu menu = new(
+            production: production,
+            monitor: Monitor,
+            reflectionHelper: Helper.Reflection,
+            scroll : 160,
+            forceFullScreen: false);
+
+        PushMenu(menu);
+    }
+
+    private void HideProductionMenu()
+    {
+        if (Game1.activeClickableMenu is ProductionMenu menu)
+        {
+            menu.QueueExit();
+            Game1.displayHUD = true;
+        }
+    }
+
+    private void DisplayCurrentlyTrackedItems()
+    {
+        Monitor.Log("===TODAY'S PRODUCTION===");
+        var items = _inventoryTracker.ProducedToday();
+        foreach ((Item Item, int Count) in items)
+        {
+            Monitor.Log($"{Item.DisplayName} {Count}");
+
+        }
+
+        Monitor.Log(Environment.NewLine);
+        Monitor.Log("===THIS WEEK PRODUCTION===");
+        foreach((Item Item, int Count) in _inventoryTracker.ProducedThisWeek())
+        {
+            Monitor.Log($"{Item.DisplayName} {Count}");
+        }
     }
 
     private void FocusSearch()
     {
-        if (Game1.activeClickableMenu is not ProductionMenu menu)
+        if (Game1.activeClickableMenu is ItemMenu itemMenu)
         {
-            Monitor.Log("Focus search can't be applied on this menu.");
+            itemMenu.FocusSearch();
+            return;
+        }
+        else if (Game1.activeClickableMenu is ProductionMenu prodMenu)
+        {
+            prodMenu.FocusSearch();
             return;
         }
 
-        menu.FocusSearch();
+        Monitor.Log("Focus search can't be applied on this menu.");
+        return;
     }
 
     private void Sort()
     {
-        if (Game1.activeClickableMenu is not ProductionMenu menu)
+        if (Game1.activeClickableMenu is not ItemMenu menu)
         {
             Monitor.Log("Sort can't be applied on this menu.");
             return;
@@ -200,7 +367,7 @@ internal class ModEntry : Mod
 
     private void ToggleMenu()
     {
-        if (Game1.activeClickableMenu is ProductionMenu)
+        if (Game1.activeClickableMenu is ItemMenu)
         {
             HideMenu();
             return;
@@ -213,11 +380,11 @@ internal class ModEntry : Mod
         Monitor.Log("Received a open menu request");
         try
         {
-            // get target
+            // get items
             IEnumerable<ItemStock> items = GetItemSubjects();
             if (items.Any() == false)
             {
-                Monitor.Log($"Items no target found.");
+                Monitor.Log($"No items found.");
                 return;
             }
 
@@ -238,7 +405,7 @@ internal class ModEntry : Mod
             .ToList()
             .ForEach(x => Monitor.Log(x));
 
-        ProductionMenu menu = new(
+        ItemMenu menu = new(
             itemStocks: items,
             monitor: Monitor,
             reflectionHelper: Helper.Reflection,
@@ -278,6 +445,7 @@ internal class ModEntry : Mod
         return menu switch
         {
             null => false, // no menu
+            ItemMenu => false,
             ProductionMenu => false,
             _ => true,
         };
@@ -291,7 +459,7 @@ internal class ModEntry : Mod
                 .Concat(Game1.player.Items)
                 .Where(x => x is not null);
 
-        var result = new Dictionary<string, ItemStock>();
+        Dictionary<string, ItemStock> result = [];
         foreach (Item item in items)
         {
             if (result.ContainsKey(item.Name) == false)
@@ -307,7 +475,7 @@ internal class ModEntry : Mod
     /// <summary>Hide the lookup UI for the current target.</summary>
     private static void HideMenu()
     {
-        if (Game1.activeClickableMenu is ProductionMenu menu)
+        if (Game1.activeClickableMenu is ItemMenu menu)
         {
             menu.QueueExit();
             Game1.displayHUD = true;
