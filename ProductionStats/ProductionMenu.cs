@@ -173,7 +173,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
             width: CommonSprites.Icons.DownArrow.Height,
             height: CommonSprites.Icons.DownArrow.Width);
     }
-    
+
     /// <summary>
     /// Indicates if we are filtering or not. If we are, they disable sorting.
     /// </summary>

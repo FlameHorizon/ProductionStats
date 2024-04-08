@@ -14,7 +14,7 @@ internal class InventoryTracker
         Start = start;
         _dateProvider = dateProvider;
     }
-   
+
     public SDate Start { get; }
     public SDate Today => _dateProvider.Now;
 

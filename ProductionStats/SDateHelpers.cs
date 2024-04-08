@@ -100,6 +100,6 @@ internal static class SDateHelpers
     /// </summary>
     /// <param name="date">The date to find the Sunday's date in that week.</param>
     /// <returns>The Sunday in the given week.</returns
-    public static SDate LastWeekday(this SDate date) 
+    public static SDate LastWeekday(this SDate date)
         => date.AddDays(7 - (int)date.DayOfWeek);
 }

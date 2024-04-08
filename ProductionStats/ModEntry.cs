@@ -287,7 +287,7 @@ internal class ModEntry : Mod
             production: production,
             monitor: Monitor,
             reflectionHelper: Helper.Reflection,
-            scroll : 160,
+            scroll: 160,
             forceFullScreen: false);
 
         PushMenu(menu);
@@ -314,7 +314,7 @@ internal class ModEntry : Mod
 
         Monitor.Log(Environment.NewLine);
         Monitor.Log("===THIS WEEK PRODUCTION===");
-        foreach((Item Item, int Count) in _inventoryTracker.ProducedThisWeek())
+        foreach ((Item Item, int Count) in _inventoryTracker.ProducedThisWeek())
         {
             Monitor.Log($"{Item.DisplayName} {Count}");
         }
