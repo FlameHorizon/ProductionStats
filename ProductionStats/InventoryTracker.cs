@@ -8,7 +8,6 @@ internal class InventoryTracker
     private readonly List<TrackedItem> _trackedItems = [];
     private readonly IDateProvider _dateProvider;
 
-
     public InventoryTracker(IDateProvider dateProvider, SDate start)
     {
         Start = start;
@@ -45,13 +44,13 @@ internal class InventoryTracker
     /// </summary>
     /// <param name="date">The date for which to retrieve produced items.</param>
     /// <returns>
-    /// An IEnumerable containing tuples of item names and their 
+    /// An IEnumerable containing item names and their 
     /// corresponding counts produced on the specified date.
     /// </returns>
     public IEnumerable<ItemStock> Produced(SDate date)
     {
         // Filter the tracked items to get those produced on the specified date,
-        // then project them into tuples containing item names and their counts.
+        // then project them into item names and their counts.
         return _trackedItems
             .Where(item => item.Date == date)
             .GroupBy(item => item.Item)
@@ -63,7 +62,7 @@ internal class InventoryTracker
     /// Retrieves the items produced today.
     /// </summary>
     /// <returns>
-    /// An IEnumerable containing tuples of item names and their 
+    /// An IEnumerable containing item names and their 
     /// corresponding counts produced today.
     /// </returns>
     public IEnumerable<ItemStock> ProducedToday()
@@ -73,7 +72,7 @@ internal class InventoryTracker
     /// Retrieves the items produced yesterday.
     /// </summary>
     /// <returns>
-    /// An IEnumerable containing tuples of item names and their
+    /// An IEnumerable containing item names and their
     /// corresponding counts produced yesterday.</returns>
     public IEnumerable<ItemStock> ProducedYesterday()
         => Produced(Today.AddDays(-1));
@@ -84,13 +83,13 @@ internal class InventoryTracker
     /// <param name="start">The start date of the period.</param>
     /// <param name="end">The end date of the period.</param>
     /// <returns>
-    /// An IEnumerable containing tuples of item names and their 
+    /// An IEnumerable containing item names and their 
     /// corresponding counts produced within the specified date range.
     /// </returns>
     public IEnumerable<ItemStock> ProducedInBetween(SDate start, SDate end)
     {
         // Filter the tracked items to get those produced between the start and end dates,
-        // then project them into tuples containing item names and their counts.
+        // then project them into item names and their counts.
         return _trackedItems
             .Where(item => item.Date.IsBetween(start, end))
             .Select(result => (result.Item, result.Count))
@@ -103,7 +102,7 @@ internal class InventoryTracker
     /// Retrieves the items produced during the current week.
     /// </summary>
     /// <returns>
-    /// An IEnumerable containing tuples of item names and their
+    /// An IEnumerable containing item names and their
     /// corresponding counts produced during the current week.
     /// </returns>
     public IEnumerable<ItemStock> ProducedThisWeek()
@@ -120,7 +119,7 @@ internal class InventoryTracker
     /// Retrieves the items produced during the current season.
     /// </summary>
     /// <returns>
-    /// An IEnumerable containing tuples of item names and their 
+    /// An IEnumerable containing item names and their 
     /// corresponding counts produced during the current season.
     /// </returns>
     public IEnumerable<ItemStock> ProducedThisSeason()
@@ -137,7 +136,7 @@ internal class InventoryTracker
     /// Retrieves the items produced during the current year.
     /// </summary>
     /// <returns>
-    /// An IEnumerable containing tuples of item names and their 
+    /// An IEnumerable containing item names and their 
     /// corresponding counts produced during the current year.
     /// </returns>
     public IEnumerable<ItemStock> ProducedThisYear()
