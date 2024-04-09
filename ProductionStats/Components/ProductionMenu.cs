@@ -5,17 +5,19 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using ProductionStats.Common;
 using ProductionStats.Common.UI;
-using ProductionStats.Components;
 using ProductionStats.Framework;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
+using System.Reflection.Metadata.Ecma335;
+using System.Runtime.InteropServices;
 
-namespace ProductionStats;
+namespace ProductionStats.Components;
 
 internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
 {
     private readonly IEnumerable<(Item Item, int Count)> _production;
+    private readonly string _title = string.Empty;
     private readonly IMonitor _monitor;
     private readonly IReflectionHelper _reflection;
     private readonly int _scrollAmount;
@@ -75,12 +77,14 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
 
     public ProductionMenu(
         IEnumerable<(Item Item, int Count)> production,
+        string title,
         IMonitor monitor,
         IReflectionHelper reflectionHelper,
         int scroll,
         bool forceFullScreen)
     {
         _production = production;
+        _title = title;
         _monitor = monitor;
         _reflection = reflectionHelper;
         _scrollAmount = scroll;
@@ -392,9 +396,6 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
 
                 // scrolled down == move text up
                 topOffset -= _currentScroll;
-
-                bool leftSide = true;
-
                 float wrapWidth = width - leftOffset - gutter;
                 _searchTextBox.Bounds = new Rectangle(
                             x: x + (int)leftOffset,
@@ -404,14 +405,24 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
 
                 // draw search box
                 _searchTextBox.Draw(contentBatch);
-                topOffset += _searchTextBox.Bounds.Height;
+                topOffset += _searchTextBox.Bounds.Height + 15;
 
-                // TODO: draw section name in the top middle of the page
+                var stringMeasure = font.MeasureString(_title);
+                var centerX = (Game1.viewport.Width / 2) - (stringMeasure.X / 2);
+
+                var titleBounds = contentBatch.DrawTextBlock(
+                    font,
+                    _title,
+                    new(centerX, y + topOffset),
+                    wrapWidth);
+
+                topOffset += titleBounds.Y + 15;
 
                 IEnumerable<(Item Item, int Count)> items = IsFiltering
                     ? _searchResults ?? _production
                     : _production;
 
+                bool leftSide = true;
                 foreach ((Item Item, int Count) in items)
                 {
                     leftOffset = leftSide ? gutter : leftOffset + 500;

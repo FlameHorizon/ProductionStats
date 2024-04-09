@@ -35,6 +35,19 @@ internal class ModEntry : Mod
         SortOrder.DescendingByCount,
     ]);
 
+    /// <summary>
+    /// Metrics calls which represents scopes which be displayed to user.
+    /// </summary>
+    private readonly Func<IEnumerable<(Item Item, int Count)>>[] _metricOrders
+        = new Func<IEnumerable<(Item Item, int Count)>>[4];
+
+    private string[] _metricsTitles = new string[4];
+
+    /// <summary>
+    /// Index of currently visible metric;
+    /// </summary>
+    private int _currentMetricIndex = 0;
+
     private ModConfig _config = null!; // Set in Entry;
 
     /// <summary>The configure key bindings.</summary>
@@ -54,6 +67,17 @@ internal class ModEntry : Mod
     {
         _config = helper.ReadConfig<ModConfig>();
         _chestFinder = new ChestFinder(helper.Multiplayer);
+
+        // define order of metrics displayed
+        _metricOrders[0] = () => _inventoryTracker.ProducedToday();
+        _metricOrders[1] = () => _inventoryTracker.ProducedThisWeek();
+        _metricOrders[2] = () => _inventoryTracker.ProducedThisSeason();
+        _metricOrders[3] = () => _inventoryTracker.ProducedThisYear();
+
+        _metricsTitles[0] = "Produced today";
+        _metricsTitles[1] = "Produced this week";
+        _metricsTitles[2] = "Produced this season";
+        _metricsTitles[3] = "Produced this year";
 
         // hook up events
         helper.Events.GameLoop.GameLaunched += OnGameLaunched;
@@ -236,11 +260,50 @@ internal class ModEntry : Mod
         {
             (Game1.activeClickableMenu as IScrollableMenu)?.ScrollDown(Game1.activeClickableMenu.height);
         }
+        else if (_keys.NextMetric.JustPressed())
+        {
+            NextMetric();
+        }
+        else if (_keys.PreviousMetric.JustPressed())
+        {
+            PreviousMetric();
+        }
         //Debugging feature
         else if (_keys.DisplayDebugInfo.JustPressed())
         {
             DisplayCurrentlyTrackedItems();
         }
+    }
+
+    private void NextMetric()
+    {
+        if (Game1.activeClickableMenu is not ProductionMenu menu)
+        {
+            Monitor.Log("Next metric can't be applied on this menu.");
+            return;
+        }
+
+        // update new metric index
+        _currentMetricIndex = (_currentMetricIndex + 1) % 4;
+        Func<IEnumerable<(Item Item, int Count)>> metric = _metricOrders[_currentMetricIndex];
+        var production = metric.Invoke();
+
+        ShowProductionMenuFor(production, _metricsTitles[_currentMetricIndex]);
+    }
+
+    private void PreviousMetric()
+    {
+        if (Game1.activeClickableMenu is not ProductionMenu menu)
+        {
+            Monitor.Log("Next metric can't be applied on this menu.");
+            return;
+        }
+
+        // update new metric index
+        _currentMetricIndex = (_currentMetricIndex - 1 < 0 ? 3 : _currentMetricIndex - 1) % 4;
+        Func<IEnumerable<(Item Item, int Count)>> metric = _metricOrders[_currentMetricIndex];
+        var production = metric.Invoke();
+        ShowProductionMenuFor(production, _metricsTitles[_currentMetricIndex]);
     }
 
     private void ToggleProductionMenu()
@@ -258,8 +321,10 @@ internal class ModEntry : Mod
         Monitor.Log("Received a open production menu request");
         try
         {
+            Func<IEnumerable<(Item Item, int Count)>> metric = _metricOrders[_currentMetricIndex];
+
             // get items
-            IEnumerable<(Item Item, int Count)> production = _inventoryTracker.ProducedToday();
+            IEnumerable<(Item Item, int Count)> production = metric.Invoke();
             if (production.Any() == false)
             {
                 Monitor.Log($"Nothing got produced today");
@@ -268,7 +333,7 @@ internal class ModEntry : Mod
 
             // show production UI
             Monitor.Log($"Found {production.Count()} items to show");
-            ShowProductionMenuFor(production);
+            ShowProductionMenuFor(production, _metricsTitles[_currentMetricIndex]);
         }
         catch (Exception ex)
         {
@@ -277,7 +342,7 @@ internal class ModEntry : Mod
         }
     }
 
-    private void ShowProductionMenuFor(IEnumerable<(Item Item, int Count)> production)
+    private void ShowProductionMenuFor(IEnumerable<(Item Item, int Count)> production, string title)
     {
         production.Select(x => $"Showing {x.Item}::{x.Count}")
             .ToList()
@@ -285,6 +350,7 @@ internal class ModEntry : Mod
 
         ProductionMenu menu = new(
             production: production,
+            title: title,
             monitor: Monitor,
             reflectionHelper: Helper.Reflection,
             scroll: 160,

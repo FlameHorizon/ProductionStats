@@ -17,6 +17,8 @@ internal class ModConfigKeys
     public KeybindList FocusSearch { get; set; } = new(SButton.F);
     public KeybindList DisplayDebugInfo { get; internal set; } = new(SButton.F12);
     public KeybindList ToggleProductionMenu { get; internal set; } = new(SButton.F11);
+    public KeybindList NextMetric { get; internal set; } = new(SButton.Right);
+    public KeybindList PreviousMetric { get; internal set; } = new(SButton.Left);
 
     /// <summary>Normalize the model after it's deserialized.</summary>
     /// <param name="context">The deserialization context.</param>
@@ -32,5 +34,7 @@ internal class ModConfigKeys
         FocusSearch ??= new KeybindList();
         DisplayDebugInfo ??= new KeybindList();
         ToggleMenu ??= new KeybindList();
+        NextMetric ??= new KeybindList();
+        PreviousMetric ??= new KeybindList();
     }
 }
