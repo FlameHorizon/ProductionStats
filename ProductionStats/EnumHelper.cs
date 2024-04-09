@@ -2,8 +2,8 @@
 using System.Reflection;
 
 namespace ProductionStats;
-// TODO: Change name from extensions to helper.
-internal static class EnumExtensions
+
+internal static class EnumHelper
 {
     /// <summary>
     /// Get the description for a given value of the enum.
