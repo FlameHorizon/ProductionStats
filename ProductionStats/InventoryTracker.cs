@@ -1,12 +1,13 @@
 ﻿using StardewModdingAPI.Utilities;
 using StardewValley;
+using System.Runtime.Serialization;
 
 namespace ProductionStats;
 
 internal class InventoryTracker
 {
     private readonly List<TrackedItem> _trackedItems = [];
-    private readonly IDateProvider _dateProvider;
+    private IDateProvider _dateProvider;
 
     public InventoryTracker(IDateProvider dateProvider, SDate start)
     {
@@ -156,4 +157,12 @@ internal class InventoryTracker
     {
         _trackedItems.Clear();
     }
+
+     /// <param name="context">The deserialization context.</param>
+    [OnDeserialized]
+    public void OnDeserialized(StreamingContext context)
+    {
+        _dateProvider ??= new InGameTimeProvider();
+    }
+
 }

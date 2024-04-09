@@ -81,17 +81,29 @@ internal class ModEntry : Mod
 
         // hook up events
         helper.Events.GameLoop.GameLaunched += OnGameLaunched;
-        helper.Events.GameLoop.ReturnedToTitle += OnReturnedToTitle;
         helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
+        helper.Events.GameLoop.Saving += OnSaving;
+        helper.Events.GameLoop.ReturnedToTitle += OnReturnedToTitle;
         helper.Events.Display.MenuChanged += OnMenuChanged;
         helper.Events.Input.ButtonsChanged += OnButtonsChanged;
         helper.Events.Player.InventoryChanged += OnInventoryChanged;
         helper.Events.World.ChestInventoryChanged += OnChestInventoryChanged;
     }
 
+    private void OnSaving(object? sender, SavingEventArgs e) 
+        => Helper.Data.WriteSaveData(nameof(InventoryTracker), _inventoryTracker);
+
     private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
     {
-        _inventoryTracker = new InventoryTracker(new InGameTimeProvider(), SDate.Now());
+        _inventoryTracker = Helper.Data.ReadSaveData<InventoryTracker>(nameof(InventoryTracker))!;
+    
+        // initialize tracker and create spot of it in save data if
+        // isn't there already.
+        if (_inventoryTracker is null)
+        {
+            _inventoryTracker = new InventoryTracker(new InGameTimeProvider(), SDate.Now());
+            Helper.Data.WriteSaveData(nameof(InventoryTracker), _inventoryTracker);
+        }
     }
 
     private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
