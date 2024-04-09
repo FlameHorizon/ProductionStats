@@ -14,7 +14,7 @@ namespace ProductionStats.Components;
 
 internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
 {
-    private readonly IEnumerable<(Item Item, int Count)> _production;
+    private readonly IEnumerable<ItemStock>_production;
     private readonly string _title = string.Empty;
     private readonly IMonitor _monitor;
     private readonly IReflectionHelper _reflection;
@@ -41,7 +41,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
     /// <summary>
     /// The current search results.
     /// </summary>
-    private IEnumerable<(Item Item, int Count)> _searchResults = [];
+    private IEnumerable<ItemStock>_searchResults = [];
 
     /// <summary>
     ///     Whether to exit the menu on the next update tick.
@@ -74,7 +74,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
     };
 
     public ProductionMenu(
-        IEnumerable<(Item Item, int Count)> production,
+        IEnumerable<ItemStock>production,
         string title,
         IMonitor monitor,
         IReflectionHelper reflectionHelper,
@@ -416,16 +416,16 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
 
                 topOffset += titleBounds.Y + 15;
 
-                IEnumerable<(Item Item, int Count)> items = IsFiltering
+                IEnumerable<ItemStock>items = IsFiltering
                     ? _searchResults ?? _production
                     : _production;
 
                 bool leftSide = true;
-                foreach ((Item Item, int Count) in items)
+                foreach (ItemStock stock in items)
                 {
                     leftOffset = leftSide ? gutter : leftOffset + 500;
 
-                    Item.drawInMenu(
+                    stock.Item.drawInMenu(
                         spriteBatch: contentBatch,
                         location: new Vector2(x + leftOffset, y + topOffset),
                         scaleSize: 1,
@@ -438,7 +438,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
                     leftOffset += 80;
 
                     // drawing item count
-                    string item = $"{Count}x ";
+                    string item = $"{stock.Count}x ";
                     Vector2 itemCountPosition = new(x + leftOffset, y + topOffset + 15);
                     Vector2 itemCountSize = contentBatch.DrawTextBlock(
                             font: font,
@@ -453,7 +453,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
 
                     Vector2 nameSize = contentBatch.DrawTextBlock(
                         font: font,
-                        text: $"{Item.DisplayName}",
+                        text: $"{stock.Item.DisplayName}",
                         position: namePosition,
                         wrapWidth: wrapWidth,
                         bold: Constant.AllowBold);

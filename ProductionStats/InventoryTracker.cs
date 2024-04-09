@@ -48,14 +48,14 @@ internal class InventoryTracker
     /// An IEnumerable containing tuples of item names and their 
     /// corresponding counts produced on the specified date.
     /// </returns>
-    public IEnumerable<(Item Item, int Count)> Produced(SDate date)
+    public IEnumerable<ItemStock> Produced(SDate date)
     {
         // Filter the tracked items to get those produced on the specified date,
         // then project them into tuples containing item names and their counts.
         return _trackedItems
             .Where(item => item.Date == date)
             .GroupBy(item => item.Item)
-            .Select(group => (Item: group.Key, Count: group.Sum(item => item.Count)))
+            .Select(group => new ItemStock(group.Key) { Count = group.Sum(item => item.Count) })
             .Where(result => result.Count > 0);
     }
 
@@ -66,7 +66,7 @@ internal class InventoryTracker
     /// An IEnumerable containing tuples of item names and their 
     /// corresponding counts produced today.
     /// </returns>
-    public IEnumerable<(Item Item, int Count)> ProducedToday()
+    public IEnumerable<ItemStock> ProducedToday()
         => Produced(Today);
 
     /// <summary>
@@ -75,7 +75,7 @@ internal class InventoryTracker
     /// <returns>
     /// An IEnumerable containing tuples of item names and their
     /// corresponding counts produced yesterday.</returns>
-    public IEnumerable<(Item Item, int Count)> ProducedYesterday()
+    public IEnumerable<ItemStock> ProducedYesterday()
         => Produced(Today.AddDays(-1));
 
     /// <summary>
@@ -87,7 +87,7 @@ internal class InventoryTracker
     /// An IEnumerable containing tuples of item names and their 
     /// corresponding counts produced within the specified date range.
     /// </returns>
-    public IEnumerable<(Item Item, int Count)> ProducedInBetween(SDate start, SDate end)
+    public IEnumerable<ItemStock> ProducedInBetween(SDate start, SDate end)
     {
         // Filter the tracked items to get those produced between the start and end dates,
         // then project them into tuples containing item names and their counts.
@@ -95,7 +95,7 @@ internal class InventoryTracker
             .Where(item => item.Date.IsBetween(start, end))
             .Select(result => (result.Item, result.Count))
             .GroupBy(item => item.Item)
-            .Select(group => (Item: group.Key, Count: group.Sum(item => item.Count)))
+            .Select(group => new ItemStock(group.Key) { Count = group.Sum(item => item.Count) })
             .Where(result => result.Count > 0);
     }
 
@@ -106,7 +106,7 @@ internal class InventoryTracker
     /// An IEnumerable containing tuples of item names and their
     /// corresponding counts produced during the current week.
     /// </returns>
-    public IEnumerable<(Item Item, int Count)> ProducedThisWeek()
+    public IEnumerable<ItemStock> ProducedThisWeek()
     {
         // Get the start and end dates of the current week.
         SDate start = Today.FirstWeekday();
@@ -123,7 +123,7 @@ internal class InventoryTracker
     /// An IEnumerable containing tuples of item names and their 
     /// corresponding counts produced during the current season.
     /// </returns>
-    public IEnumerable<(Item Item, int Count)> ProducedThisSeason()
+    public IEnumerable<ItemStock> ProducedThisSeason()
     {
         // Get the start and end dates of the current season.
         SDate start = new(1, Today.Season, Today.Year);
@@ -140,7 +140,7 @@ internal class InventoryTracker
     /// An IEnumerable containing tuples of item names and their 
     /// corresponding counts produced during the current year.
     /// </returns>
-    public IEnumerable<(Item Item, int Count)> ProducedThisYear()
+    public IEnumerable<ItemStock> ProducedThisYear()
     {
         // Get the start and end dates of the current year.
         SDate start = new(1, Season.Spring, Today.Year);

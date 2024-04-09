@@ -38,8 +38,8 @@ internal class ModEntry : Mod
     /// <summary>
     /// Metrics calls which represents scopes which be displayed to user.
     /// </summary>
-    private readonly Func<IEnumerable<(Item Item, int Count)>>[] _metricOrders
-        = new Func<IEnumerable<(Item Item, int Count)>>[4];
+    private readonly Func<IEnumerable<ItemStock>>[] _metricOrders
+        = new Func<IEnumerable<ItemStock>>[4];
 
     private string[] _metricsTitles = new string[4];
 
@@ -285,7 +285,7 @@ internal class ModEntry : Mod
 
         // update new metric index
         _currentMetricIndex = (_currentMetricIndex + 1) % 4;
-        Func<IEnumerable<(Item Item, int Count)>> metric = _metricOrders[_currentMetricIndex];
+        Func<IEnumerable<ItemStock>> metric = _metricOrders[_currentMetricIndex];
         var production = metric.Invoke();
 
         ShowProductionMenuFor(production, _metricsTitles[_currentMetricIndex]);
@@ -301,7 +301,7 @@ internal class ModEntry : Mod
 
         // update new metric index
         _currentMetricIndex = (_currentMetricIndex - 1 < 0 ? 3 : _currentMetricIndex - 1) % 4;
-        Func<IEnumerable<(Item Item, int Count)>> metric = _metricOrders[_currentMetricIndex];
+        Func<IEnumerable<ItemStock>> metric = _metricOrders[_currentMetricIndex];
         var production = metric.Invoke();
         ShowProductionMenuFor(production, _metricsTitles[_currentMetricIndex]);
     }
@@ -321,10 +321,10 @@ internal class ModEntry : Mod
         Monitor.Log("Received a open production menu request");
         try
         {
-            Func<IEnumerable<(Item Item, int Count)>> metric = _metricOrders[_currentMetricIndex];
+            Func<IEnumerable<ItemStock>> metric = _metricOrders[_currentMetricIndex];
 
             // get items
-            IEnumerable<(Item Item, int Count)> production = metric.Invoke();
+            IEnumerable<ItemStock> production = metric.Invoke();
             if (production.Any() == false)
             {
                 Monitor.Log($"Nothing got produced today");
@@ -342,7 +342,7 @@ internal class ModEntry : Mod
         }
     }
 
-    private void ShowProductionMenuFor(IEnumerable<(Item Item, int Count)> production, string title)
+    private void ShowProductionMenuFor(IEnumerable<ItemStock> production, string title)
     {
         production.Select(x => $"Showing {x.Item}::{x.Count}")
             .ToList()
@@ -372,17 +372,17 @@ internal class ModEntry : Mod
     {
         Monitor.Log("===TODAY'S PRODUCTION===");
         var items = _inventoryTracker.ProducedToday();
-        foreach ((Item Item, int Count) in items)
+        foreach (ItemStock stock in items)
         {
-            Monitor.Log($"{Item.DisplayName} {Count}");
+            Monitor.Log($"{stock.Item.DisplayName} {stock.Count}");
 
         }
 
         Monitor.Log(Environment.NewLine);
         Monitor.Log("===THIS WEEK PRODUCTION===");
-        foreach ((Item Item, int Count) in _inventoryTracker.ProducedThisWeek())
+        foreach (ItemStock stock in _inventoryTracker.ProducedThisWeek())
         {
-            Monitor.Log($"{Item.DisplayName} {Count}");
+            Monitor.Log($"{stock.Item.DisplayName} {stock.Count}");
         }
     }
 
