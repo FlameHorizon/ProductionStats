@@ -9,8 +9,6 @@ using ProductionStats.Framework;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;
-using System.Reflection.Metadata.Ecma335;
-using System.Runtime.InteropServices;
 
 namespace ProductionStats.Components;
 
