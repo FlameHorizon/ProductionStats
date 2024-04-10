@@ -362,7 +362,6 @@ internal class ModEntry : Mod
         menu.ChangedToNextPage += OnNextMetric;
         menu.ChangedToPreviousPage += OnPreviousMetric;
 
-
         PushMenu(menu);
     }
 
