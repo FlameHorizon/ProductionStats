@@ -91,18 +91,21 @@ internal class ModEntry : Mod
     }
 
     private void OnSaving(object? sender, SavingEventArgs e) 
-        => Helper.Data.WriteSaveData(nameof(InventoryTracker), _inventoryTracker);
+        => Helper.Data.WriteSaveData("inventory-tracker", _inventoryTracker);
 
     private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
     {
-        _inventoryTracker = Helper.Data.ReadSaveData<InventoryTracker>(nameof(InventoryTracker))!;
+        _inventoryTracker = Helper.Data.ReadSaveData<InventoryTracker>("inventory-tracker")!;
     
         // initialize tracker and create spot of it in save data if
         // isn't there already.
         if (_inventoryTracker is null)
         {
-            _inventoryTracker = new InventoryTracker(new InGameTimeProvider(), SDate.Now());
-            Helper.Data.WriteSaveData(nameof(InventoryTracker), _inventoryTracker);
+            _inventoryTracker = new InventoryTracker(
+                dateProvider: new InGameTimeProvider(),
+                start: SDate.Now());
+
+            Helper.Data.WriteSaveData("inventory-tracker", _inventoryTracker);
         }
     }
 
