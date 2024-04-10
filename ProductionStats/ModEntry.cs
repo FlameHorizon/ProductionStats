@@ -83,7 +83,6 @@ internal class ModEntry : Mod
         helper.Events.GameLoop.GameLaunched += OnGameLaunched;
         helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
         helper.Events.GameLoop.Saving += OnSaving;
-        helper.Events.GameLoop.ReturnedToTitle += OnReturnedToTitle;
         helper.Events.Display.MenuChanged += OnMenuChanged;
         helper.Events.Input.ButtonsChanged += OnButtonsChanged;
         helper.Events.Player.InventoryChanged += OnInventoryChanged;
@@ -107,11 +106,6 @@ internal class ModEntry : Mod
 
             Helper.Data.WriteSaveData("inventory-tracker", _inventoryTracker);
         }
-    }
-
-    private void OnReturnedToTitle(object? sender, ReturnedToTitleEventArgs e)
-    {
-        _inventoryTracker.Reset();
     }
 
     private void OnChestInventoryChanged(object? sender, ChestInventoryChangedEventArgs e)

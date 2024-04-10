@@ -150,14 +150,6 @@ internal class InventoryTracker
         return ProducedInBetween(start, end);
     }
 
-    /// <summary>
-    /// Clears internal buffer of tracked items.
-    /// </summary>
-    internal void Reset()
-    {
-        _trackedItems.Clear();
-    }
-
      /// <param name="context">The deserialization context.</param>
     [OnDeserialized]
     public void OnDeserialized(StreamingContext context)
