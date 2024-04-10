@@ -273,6 +273,14 @@ internal class ModEntry : Mod
         {
             (Game1.activeClickableMenu as IScrollableMenu)?.ScrollDown(Game1.activeClickableMenu.height);
         }
+        else if (_keys.NextMetric.JustPressed())
+        {
+            OnNextMetric(this, new ChangedPageArgs(_metricsTitles[_currentMetricIndex]));
+        }
+        else if (_keys.PreviousMetric.JustPressed())
+        {
+            OnPreviousMetric(this, new ChangedPageArgs(_metricsTitles[_currentMetricIndex]));
+        }
     }
 
     private void OnNextMetric(object? sender, ChangedPageArgs e)
