@@ -110,7 +110,8 @@ internal class ModEntry : Mod
 
             Helper.Data.WriteSaveData("inventory-tracker", _inventoryTracker);
         }
-    }
+
+            }
 
     private void OnChestInventoryChanged(object? sender, ChestInventoryChangedEventArgs e)
     {
@@ -273,17 +274,9 @@ internal class ModEntry : Mod
         {
             (Game1.activeClickableMenu as IScrollableMenu)?.ScrollDown(Game1.activeClickableMenu.height);
         }
-        else if (_keys.NextMetric.JustPressed())
-        {
-            NextMetric();
-        }
-        else if (_keys.PreviousMetric.JustPressed())
-        {
-            PreviousMetric();
-        }
     }
 
-    private void NextMetric()
+    private void OnNextMetric(object? sender, ChangedPageArgs e)
     {
         if (Game1.activeClickableMenu is not ProductionMenu menu)
         {
@@ -299,7 +292,7 @@ internal class ModEntry : Mod
         ShowProductionMenuFor(production, _metricsTitles[_currentMetricIndex]);
     }
 
-    private void PreviousMetric()
+    private void OnPreviousMetric(object? sender, ChangedPageArgs e)
     {
         if (Game1.activeClickableMenu is not ProductionMenu menu)
         {
@@ -365,6 +358,11 @@ internal class ModEntry : Mod
             reflectionHelper: Helper.Reflection,
             scroll: 160,
             forceFullScreen: false);
+
+        // hookup events
+        menu.ChangedToNextPage += OnNextMetric;
+        menu.ChangedToPreviousPage += OnPreviousMetric;
+
 
         PushMenu(menu);
     }

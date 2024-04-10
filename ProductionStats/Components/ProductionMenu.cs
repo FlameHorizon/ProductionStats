@@ -14,18 +14,32 @@ namespace ProductionStats.Components;
 
 internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
 {
-    private readonly IEnumerable<ItemStock>_production;
+    private readonly IEnumerable<ItemStock> _production;
     private readonly string _title = string.Empty;
     private readonly IMonitor _monitor;
     private readonly IReflectionHelper _reflection;
     private readonly int _scrollAmount;
     private readonly bool _forceFullScreen;
 
-    /// <summary>The clickable 'scroll up' icon.</summary>
+    /// <summary>
+    /// The clickable 'scroll up' icon.
+    /// </summary>
     private readonly ClickableTextureComponent _scrollUpButton;
 
-    /// <summary>The clickable 'scroll down' icon.</summary>
+    /// <summary>
+    /// The clickable 'scroll down' icon.
+    /// </summary>
     private readonly ClickableTextureComponent _scrollDownButton;
+
+    /// <summary>
+    /// The clickable 'go back' icon.
+    /// </summary>
+    private readonly ClickableTextureComponent _previousPageButton;
+
+    /// <summary>
+    /// The clickable 'go next' icon.
+    /// </summary>
+    private readonly ClickableTextureComponent _nextPageButton;
 
     /// <summary>The aspect ratio of the page background.</summary>
     private readonly Vector2 _aspectRatio = new(
@@ -41,7 +55,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
     /// <summary>
     /// The current search results.
     /// </summary>
-    private IEnumerable<ItemStock>_searchResults = [];
+    private IEnumerable<ItemStock> _searchResults = [];
 
     /// <summary>
     ///     Whether to exit the menu on the next update tick.
@@ -73,8 +87,20 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
         ColorDestinationBlend = Blend.InverseSourceAlpha
     };
 
+    /// <summary>
+    /// Raises an event when metric page has 
+    /// been changed to previous (left arrow).
+    /// </summary>
+    public EventHandler<ChangedPageArgs>? ChangedToPreviousPage;
+
+    /// <summary>
+    /// Raises an event when metric page has 
+    /// been changed to next (right arrow).
+    /// </summary>
+    public EventHandler<ChangedPageArgs>? ChangedToNextPage;
+
     public ProductionMenu(
-        IEnumerable<ItemStock>production,
+        IEnumerable<ItemStock> production,
         string title,
         IMonitor monitor,
         IReflectionHelper reflectionHelper,
@@ -103,6 +129,18 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
             CommonSprites.Icons.Sheet,
             CommonSprites.Icons.DownArrow,
             1);
+
+        _previousPageButton = new ClickableTextureComponent(
+            bounds: Rectangle.Empty,
+            texture: CommonSprites.Icons.Sheet,
+            sourceRect: CommonSprites.Icons.LeftArrow,
+            scale: 1);
+
+        _nextPageButton = new ClickableTextureComponent(
+            Rectangle.Empty,
+            CommonSprites.Icons.Sheet,
+            CommonSprites.Icons.RightArrow,
+            scale: 1);
 
         UpdateLayout();
         _searchTextBox.OnChanged += (_, text) => ReceiveSearchTextboxChanged(text);
@@ -221,6 +259,15 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
             _searchTextBox.Deselect();
         }
 
+        if (_previousPageButton.bounds.Contains(x, y))
+        {
+            PreviousMetric();
+        }
+        else if (_nextPageButton.bounds.Contains(x, y))
+        {
+            NextMetric();
+        }
+
         // close menu when clicked outside
         if (isWithinBounds(x, y) == false)
         {
@@ -235,6 +282,16 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
         {
             ScrollDown();
         }
+    }
+
+    private void NextMetric()
+    {
+        ChangedToNextPage?.Invoke(this, new ChangedPageArgs(_title));
+    }
+
+    private void PreviousMetric()
+    {
+        ChangedToPreviousPage?.Invoke(this, new ChangedPageArgs(_title));
     }
 
     /// <summary>The method invoked when the player right-clicks on the lookup UI.</summary>
@@ -406,7 +463,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
                 topOffset += _searchTextBox.Bounds.Height + 15;
 
                 var stringMeasure = font.MeasureString(_title);
-                var centerX = (Game1.viewport.Width / 2) - (stringMeasure.X / 2);
+                var centerX = (Game1.viewport.Width / 2) - (stringMeasure.X / 2); // 1250 - 95 = 1345
 
                 var titleBounds = contentBatch.DrawTextBlock(
                     font,
@@ -414,9 +471,25 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
                     new(centerX, y + topOffset),
                     wrapWidth);
 
+                // draw left / right arrows
+                _previousPageButton.bounds = new Rectangle(
+                    x: (int)centerX - CommonSprites.Icons.LeftArrow.Width - 20,
+                    y: y + (int)topOffset,
+                    width: CommonSprites.Icons.LeftArrow.Width,
+                    height: CommonSprites.Icons.LeftArrow.Height);
+
+                _nextPageButton.bounds = new Rectangle(
+                    x: (int)((int)centerX + titleBounds.X + 20),
+                    y: y + (int)topOffset,
+                    width: CommonSprites.Icons.LeftArrow.Width,
+                    height: CommonSprites.Icons.LeftArrow.Height);
+
+                _previousPageButton.draw(contentBatch);
+                _nextPageButton.draw(contentBatch);
+
                 topOffset += titleBounds.Y + 15;
 
-                IEnumerable<ItemStock>items = IsFiltering
+                IEnumerable<ItemStock> items = IsFiltering
                     ? _searchResults ?? _production
                     : _production;
 

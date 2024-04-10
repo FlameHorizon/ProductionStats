@@ -17,7 +17,7 @@ internal class InventoryTracker
 
     public SDate Start { get; }
     public SDate Today => _dateProvider.Now;
-
+   
     /// <summary>
     /// Adds items tracker with today's (<see cref="StardewDate"/>) date.
     /// </summary>
