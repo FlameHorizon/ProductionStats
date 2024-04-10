@@ -318,7 +318,7 @@ internal class ModEntry : Mod
     {
         if (Game1.activeClickableMenu is ProductionMenu)
         {
-            HideProductionMenu();
+            HideMenu();
             return;
         }
         ShowProductionMenu();
@@ -365,15 +365,6 @@ internal class ModEntry : Mod
             forceFullScreen: false);
 
         PushMenu(menu);
-    }
-
-    private void HideProductionMenu()
-    {
-        if (Game1.activeClickableMenu is ProductionMenu menu)
-        {
-            menu.QueueExit();
-            Game1.displayHUD = true;
-        }
     }
 
     private void FocusSearch()
@@ -531,9 +522,14 @@ internal class ModEntry : Mod
     /// <summary>Hide the lookup UI for the current target.</summary>
     private static void HideMenu()
     {
-        if (Game1.activeClickableMenu is ItemMenu menu)
+        if (Game1.activeClickableMenu is ItemMenu itemMenu)
         {
-            menu.QueueExit();
+            itemMenu.QueueExit();
+            Game1.displayHUD = true;
+        }
+        else if (Game1.activeClickableMenu is ProductionMenu prodMenu)
+        {
+            prodMenu.QueueExit();
             Game1.displayHUD = true;
         }
     }
