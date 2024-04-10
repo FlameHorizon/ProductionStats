@@ -41,7 +41,10 @@ internal class ModEntry : Mod
     private readonly Func<IEnumerable<ItemStock>>[] _metricOrders
         = new Func<IEnumerable<ItemStock>>[4];
 
-    private string[] _metricsTitles = new string[4];
+    /// <summary>
+    /// Metrics' titles displayed on page.
+    /// </summary>
+    private readonly string[] _metricsTitles = new string[4];
 
     /// <summary>
     /// Index of currently visible metric;
@@ -74,6 +77,7 @@ internal class ModEntry : Mod
         _metricOrders[2] = () => _inventoryTracker.ProducedThisSeason();
         _metricOrders[3] = () => _inventoryTracker.ProducedThisYear();
 
+        // define title of each metric
         _metricsTitles[0] = "Produced today";
         _metricsTitles[1] = "Produced this week";
         _metricsTitles[2] = "Produced this season";
@@ -89,13 +93,13 @@ internal class ModEntry : Mod
         helper.Events.World.ChestInventoryChanged += OnChestInventoryChanged;
     }
 
-    private void OnSaving(object? sender, SavingEventArgs e) 
+    private void OnSaving(object? sender, SavingEventArgs e)
         => Helper.Data.WriteSaveData("inventory-tracker", _inventoryTracker);
 
     private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
     {
         _inventoryTracker = Helper.Data.ReadSaveData<InventoryTracker>("inventory-tracker")!;
-    
+
         // initialize tracker and create spot of it in save data if
         // isn't there already.
         if (_inventoryTracker is null)
@@ -277,11 +281,6 @@ internal class ModEntry : Mod
         {
             PreviousMetric();
         }
-        //Debugging feature
-        else if (_keys.DisplayDebugInfo.JustPressed())
-        {
-            DisplayCurrentlyTrackedItems();
-        }
     }
 
     private void NextMetric()
@@ -374,24 +373,6 @@ internal class ModEntry : Mod
         {
             menu.QueueExit();
             Game1.displayHUD = true;
-        }
-    }
-
-    private void DisplayCurrentlyTrackedItems()
-    {
-        Monitor.Log("===TODAY'S PRODUCTION===");
-        var items = _inventoryTracker.ProducedToday();
-        foreach (ItemStock stock in items)
-        {
-            Monitor.Log($"{stock.Item.DisplayName} {stock.Count}");
-
-        }
-
-        Monitor.Log(Environment.NewLine);
-        Monitor.Log("===THIS WEEK PRODUCTION===");
-        foreach (ItemStock stock in _inventoryTracker.ProducedThisWeek())
-        {
-            Monitor.Log($"{stock.Item.DisplayName} {stock.Count}");
         }
     }
 
