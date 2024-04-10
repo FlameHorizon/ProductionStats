@@ -7,3 +7,4 @@ using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Naming", "VSSpell001:Spell Check", Justification = "<Pending>", Scope = "member", Target = "~M:ProductionStats.Framework.ModConfig.OnDeserialized(System.Runtime.Serialization.StreamingContext)")]
 [assembly: SuppressMessage("Naming", "VSSpell001:Spell Check", Justification = "<Pending>", Scope = "member", Target = "~M:ProductionStats.InventoryTracker.OnDeserialized(System.Runtime.Serialization.StreamingContext)")]
+[assembly: SuppressMessage("Naming", "VSSpell001:Spell Check", Justification = "<Pending>", Scope = "member", Target = "~M:ProductionStats.Framework.ModConfigKeys.OnDeserialized(System.Runtime.Serialization.StreamingContext)")]
