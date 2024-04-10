@@ -214,6 +214,20 @@ internal class ModEntry : Mod
             getValue: () => _config.Controls.FocusSearch,
             setValue: value => _config.Controls.FocusSearch = value
         );
+
+        configMenu.AddKeybindList(
+            mod: ModManifest,
+            name: () => "Go to next metric",
+            tooltip: () => "Changes current metric view for the next available.",
+            getValue: () => _config.Controls.NextMetric,
+            setValue: value => _config.Controls.NextMetric = value);
+
+        configMenu.AddKeybindList(
+            mod: ModManifest,
+            name: () => "Go to previous metric",
+            tooltip: () => "Changes current metric view for the previous.",
+            getValue: () => _config.Controls.PreviousMetric,
+            setValue: value => _config.Controls.PreviousMetric = value);
     }
 
     /// <inheritdoc cref="IDisplayEvents.MenuChanged"/>
