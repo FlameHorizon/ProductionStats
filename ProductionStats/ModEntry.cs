@@ -294,7 +294,7 @@ internal class ModEntry : Mod
         // update new metric index
         _currentMetricIndex = (_currentMetricIndex + 1) % 4;
         Func<IEnumerable<ItemStock>> metric = _metricOrders[_currentMetricIndex];
-        var production = metric.Invoke();
+        IEnumerable<ItemStock> production = metric.Invoke();
 
         ShowProductionMenuFor(production, _metricsTitles[_currentMetricIndex]);
     }
@@ -309,8 +309,9 @@ internal class ModEntry : Mod
 
         // update new metric index
         _currentMetricIndex = (_currentMetricIndex - 1 < 0 ? 3 : _currentMetricIndex - 1) % 4;
-        Func<IEnumerable<ItemStock>> metric = _metricOrders[_currentMetricIndex];
-        var production = metric.Invoke();
+        Func<IEnumerable<ItemStock>> metricFunc = _metricOrders[_currentMetricIndex];
+        IEnumerable<ItemStock> production = metricFunc.Invoke();
+
         ShowProductionMenuFor(production, _metricsTitles[_currentMetricIndex]);
     }
 
@@ -329,13 +330,14 @@ internal class ModEntry : Mod
         Monitor.Log("Received a open production menu request");
         try
         {
-            Func<IEnumerable<ItemStock>> metric = _metricOrders[_currentMetricIndex];
+            // get method responsible for getting items using selected metric.
+            Func<IEnumerable<ItemStock>> metricFunc = _metricOrders[_currentMetricIndex];
 
             // get items
-            IEnumerable<ItemStock> production = metric.Invoke();
+            IEnumerable<ItemStock> production = metricFunc.Invoke();
             if (production.Any() == false)
             {
-                Monitor.Log($"Nothing got produced today");
+                Monitor.Log($"Nothing got produced.");
                 return;
             }
 
