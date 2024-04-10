@@ -217,6 +217,14 @@ internal class ModEntry : Mod
 
         configMenu.AddKeybindList(
             mod: ModManifest,
+            name: () => "Toggle production menu",
+            tooltip: () => "Toggles menu which display number of items based on when they were aquired.",
+            getValue: () => _config.Controls.ToggleProductionMenu,
+            setValue: value => _config.Controls.ToggleProductionMenu = value
+        );
+
+        configMenu.AddKeybindList(
+            mod: ModManifest,
             name: () => "Go to next metric",
             tooltip: () => "Changes current metric view for the next available.",
             getValue: () => _config.Controls.NextMetric,

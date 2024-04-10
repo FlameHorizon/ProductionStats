@@ -463,7 +463,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
                 topOffset += _searchTextBox.Bounds.Height + 15;
 
                 var stringMeasure = font.MeasureString(_title);
-                var centerX = (Game1.viewport.Width / 2) - (stringMeasure.X / 2); // 1250 - 95 = 1345
+                var centerX = (Game1.viewport.Width / 2) - (stringMeasure.X / 2);
 
                 var titleBounds = contentBatch.DrawTextBlock(
                     font,
