@@ -473,13 +473,13 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
 
                 // draw left / right arrows
                 _previousPageButton.bounds = new Rectangle(
-                    x: (int)centerX - CommonSprites.Icons.LeftArrow.Width - 20,
+                    x: (Game1.viewport.Width / 2) - CommonSprites.Icons.LeftArrow.Width - 160,
                     y: y + (int)topOffset,
                     width: CommonSprites.Icons.LeftArrow.Width,
                     height: CommonSprites.Icons.LeftArrow.Height);
 
                 _nextPageButton.bounds = new Rectangle(
-                    x: (int)((int)centerX + titleBounds.X + 20),
+                    x: (Game1.viewport.Width / 2) + 160,
                     y: y + (int)topOffset,
                     width: CommonSprites.Icons.LeftArrow.Width,
                     height: CommonSprites.Icons.LeftArrow.Height);
