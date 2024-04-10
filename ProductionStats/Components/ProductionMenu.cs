@@ -620,4 +620,18 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
     private static void CleanupImpl() => Game1.displayHUD = true;
 
     internal void FocusSearch() => _searchTextBox.Select();
+
+    /// <summary>Update the menu state if needed.</summary>
+    /// <param name="time">The elapsed game time.</param>
+    public override void update(GameTime time)
+    {
+        if (_exitOnNextTick && readyToClose())
+        {
+            exitThisMenu();
+        }
+        else
+        {
+            base.update(time);
+        }
+    }
 }
