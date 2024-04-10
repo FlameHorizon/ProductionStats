@@ -110,8 +110,7 @@ internal class ModEntry : Mod
 
             Helper.Data.WriteSaveData("inventory-tracker", _inventoryTracker);
         }
-
-            }
+    }
 
     private void OnChestInventoryChanged(object? sender, ChestInventoryChangedEventArgs e)
     {

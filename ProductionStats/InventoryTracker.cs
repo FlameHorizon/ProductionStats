@@ -17,7 +17,7 @@ internal class InventoryTracker
 
     public SDate Start { get; }
     public SDate Today => _dateProvider.Now;
-   
+
     /// <summary>
     /// Adds items tracker with today's (<see cref="StardewDate"/>) date.
     /// </summary>
@@ -150,7 +150,7 @@ internal class InventoryTracker
         return ProducedInBetween(start, end);
     }
 
-     /// <param name="context">The deserialization context.</param>
+    /// <param name="context">The deserialization context.</param>
     [OnDeserialized]
     public void OnDeserialized(StreamingContext context)
     {
