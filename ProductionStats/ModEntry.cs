@@ -218,7 +218,7 @@ internal class ModEntry : Mod
         configMenu.AddKeybindList(
             mod: ModManifest,
             name: () => "Toggle production menu",
-            tooltip: () => "Toggles menu which display number of items based on when they were aquired.",
+            tooltip: () => "Toggles menu which display number of items based on when they were acquired.",
             getValue: () => _config.Controls.ToggleProductionMenu,
             setValue: value => _config.Controls.ToggleProductionMenu = value
         );
@@ -510,7 +510,8 @@ internal class ModEntry : Mod
             _previousMenus.Value.Push(Game1.activeClickableMenu);
             Helper.Reflection
                 .GetField<IClickableMenu>(typeof(Game1), "_activeClickableMenu")
-                .SetValue(menu); // bypass Game1.activeClickableMenu, which disposes the previous menu
+                // bypass Game1.activeClickableMenu, which disposes the previous menu
+                .SetValue(menu); 
         }
         else
         {
