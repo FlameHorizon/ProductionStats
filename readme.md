@@ -28,6 +28,17 @@ You can sort items by the name or by the count in ascending and descending order
 
 ![Sorting](/imgs/sorting.gif)
 
+## Production over time
+
+To open this menu press `Left Shift` + `F5`. In this view you can see your production four periods of time
+
+- Today - items acquired from the beginning of the current date until now.
+- This week - items acquired from the start of the current week (Monday) to now
+- This season - items acquired from the start of the current season (1st day of the season) until now.
+- This year - items acquired from the start of the current year (1st day of spring) until now.
+
+![Production over time](/imgs/production-over-item.gif)
+
 # Keybindings
 
 ## In-game settings
