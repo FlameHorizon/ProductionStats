@@ -15,9 +15,9 @@ internal class ModConfigKeys
     public KeybindList PageUp { get; set; } = new(SButton.PageUp);
     public KeybindList PageDown { get; set; } = new(SButton.PageDown);
     public KeybindList FocusSearch { get; set; } = new(SButton.F);
-    public KeybindList ToggleProductionMenu { get; internal set; } = new(SButton.F11);
-    public KeybindList NextMetric { get; internal set; } = new(SButton.Right);
-    public KeybindList PreviousMetric { get; internal set; } = new(SButton.Left);
+    public KeybindList ToggleProductionMenu { get; set; } = KeybindList.Parse($"{SButton.LeftShift} + {SButton.F5}");
+    public KeybindList NextMetric { get; set; } = new(SButton.Right);
+    public KeybindList PreviousMetric { get; set; } = new(SButton.Left);
 
     /// <summary>Normalize the model after it's deserialized.</summary>
     /// <param name="context">The deserialization context.</param>
