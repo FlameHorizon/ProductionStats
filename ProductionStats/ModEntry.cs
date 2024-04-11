@@ -110,6 +110,17 @@ internal class ModEntry : Mod
 
             Helper.Data.WriteSaveData("inventory-tracker", _inventoryTracker);
         }
+
+#if DEBUG
+        // DEBUG FEATURE - produce random dataset for visualization.
+        foreach ((Item Item, int Count) in VisualizationDataset.Get())
+        {
+            _inventoryTracker.Add(Item, Count, SDate.Now());
+            _inventoryTracker.Add(Item, Count, SDate.Now().AddDays(2));
+            _inventoryTracker.Add(Item, Count, SDate.Now().AddWeeks(2));
+            _inventoryTracker.Add(Item, Count, SDate.Now().AddSeasons(2));
+    }
+#endif
     }
 
     private void OnChestInventoryChanged(object? sender, ChestInventoryChangedEventArgs e)
