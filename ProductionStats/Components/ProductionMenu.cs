@@ -465,24 +465,24 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
                 _searchTextBox.Draw(contentBatch);
                 topOffset += _searchTextBox.Bounds.Height + 15;
 
-                var stringMeasure = font.MeasureString(_title);
+                var stringMeasure = Game1.dialogueFont.MeasureString(_title);
                 var centerX = (Game1.viewport.Width / 2) - (stringMeasure.X / 2);
 
                 var titleBounds = contentBatch.DrawTextBlock(
-                    font,
+                    Game1.dialogueFont,
                     _title,
                     new(centerX, y + topOffset),
                     wrapWidth);
 
                 // draw left / right arrows
                 _previousPageButton.bounds = new Rectangle(
-                    x: (Game1.viewport.Width / 2) - CommonSprites.Icons.LeftArrow.Width - 160,
+                    x: (Game1.viewport.Width / 2) - CommonSprites.Icons.LeftArrow.Width - 200,
                     y: y + (int)topOffset,
                     width: CommonSprites.Icons.LeftArrow.Width,
                     height: CommonSprites.Icons.LeftArrow.Height);
 
                 _nextPageButton.bounds = new Rectangle(
-                    x: (Game1.viewport.Width / 2) + 160,
+                    x: (Game1.viewport.Width / 2) + 200,
                     y: y + (int)topOffset,
                     width: CommonSprites.Icons.LeftArrow.Width,
                     height: CommonSprites.Icons.LeftArrow.Height);
