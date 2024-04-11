@@ -511,7 +511,7 @@ internal class ModEntry : Mod
             Helper.Reflection
                 .GetField<IClickableMenu>(typeof(Game1), "_activeClickableMenu")
                 // bypass Game1.activeClickableMenu, which disposes the previous menu
-                .SetValue(menu); 
+                .SetValue(menu);
         }
         else
         {
