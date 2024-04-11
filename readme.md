@@ -44,7 +44,7 @@ To open this menu press `Left Shift` + `F5`. In this view you can see your produ
 ## In-game settings
 If you have Generic Mod Config Menu installed, you can click the cog button (⚙) on the title screen or the "mod options" button at the bottom of the in-game menu to configure the mod. Hover the cursor over a field for details, or see the next section.
 
-![In-game settings](/imgs/in-game-config.png)
+![In-game settings](/imgs/in-game-config2.png)
 
 ## Editing `config.json`
 If you wish to change default keybindings you can edit `config.json` file which is in this mod directory. More on this topic in [SDV Wiki - Configure Mods](https://stardewvalleywiki.com/Modding:Player_Guide/Getting_Started#Configure_mods) 
