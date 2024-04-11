@@ -119,7 +119,7 @@ internal class ModEntry : Mod
             _inventoryTracker.Add(Item, Count, SDate.Now().AddDays(2));
             _inventoryTracker.Add(Item, Count, SDate.Now().AddWeeks(2));
             _inventoryTracker.Add(Item, Count, SDate.Now().AddSeasons(2));
-    }
+        }
 #endif
     }
 
@@ -274,7 +274,11 @@ internal class ModEntry : Mod
             return;
         }
 
-        if (_keys.ToggleMenu.JustPressed())
+        if (_keys.ToggleProductionMenu.JustPressed())
+        {
+            ToggleProductionMenu();
+        }
+        else if (_keys.ToggleMenu.JustPressed())
         {
             ToggleMenu();
         }
@@ -285,10 +289,6 @@ internal class ModEntry : Mod
         else if (_keys.FocusSearch.JustPressed())
         {
             FocusSearch();
-        }
-        else if (_keys.ToggleProductionMenu.JustPressed())
-        {
-            ToggleProductionMenu();
         }
         else if (_keys.ScrollUp.JustPressed())
         {
