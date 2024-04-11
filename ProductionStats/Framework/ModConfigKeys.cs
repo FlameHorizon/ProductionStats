@@ -15,7 +15,6 @@ internal class ModConfigKeys
     public KeybindList PageUp { get; set; } = new(SButton.PageUp);
     public KeybindList PageDown { get; set; } = new(SButton.PageDown);
     public KeybindList FocusSearch { get; set; } = new(SButton.F);
-    public KeybindList DisplayDebugInfo { get; internal set; } = new(SButton.F12);
     public KeybindList ToggleProductionMenu { get; internal set; } = new(SButton.F11);
     public KeybindList NextMetric { get; internal set; } = new(SButton.Right);
     public KeybindList PreviousMetric { get; internal set; } = new(SButton.Left);
@@ -32,7 +31,6 @@ internal class ModConfigKeys
         PageUp ??= new KeybindList();
         PageDown ??= new KeybindList();
         FocusSearch ??= new KeybindList();
-        DisplayDebugInfo ??= new KeybindList();
         ToggleMenu ??= new KeybindList();
         NextMetric ??= new KeybindList();
         PreviousMetric ??= new KeybindList();

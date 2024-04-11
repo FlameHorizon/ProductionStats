@@ -99,6 +99,11 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
     /// </summary>
     public EventHandler<ChangedPageArgs>? ChangedToNextPage;
 
+    /// <summary>
+    /// Raises an event when metric page is closing.
+    /// </summary>
+    public EventHandler? Closing;
+
     public ProductionMenu(
         IEnumerable<ItemStock> production,
         string title,
@@ -144,9 +149,6 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
 
         UpdateLayout();
         _searchTextBox.OnChanged += (_, text) => ReceiveSearchTextboxChanged(text);
-
-        // hide game HUD
-        Game1.displayHUD = false;
     }
 
     private void ReceiveSearchTextboxChanged(string search)
@@ -232,6 +234,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
             else
             {
                 exitThisMenu();
+                Closing?.Invoke(this, EventArgs.Empty);
             }
         }
     }
@@ -613,11 +616,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
     {
         _searchTextBox.Dispose();
         _contentBlendState.Dispose();
-        CleanupImpl();
     }
-
-    /// <summary>Perform cleanup specific to the lookup menu.</summary>
-    private static void CleanupImpl() => Game1.displayHUD = true;
 
     internal void FocusSearch() => _searchTextBox.Select();
 

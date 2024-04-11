@@ -391,8 +391,16 @@ internal class ModEntry : Mod
         // hookup events
         menu.ChangedToNextPage += OnNextMetric;
         menu.ChangedToPreviousPage += OnPreviousMetric;
+        menu.Closing += OnMetricsClosing;
+
+        Game1.displayHUD = false;
 
         PushMenu(menu);
+    }
+
+    private void OnMetricsClosing(object? sender, EventArgs e)
+    {
+        Game1.displayHUD = true;
     }
 
     private void FocusSearch()
