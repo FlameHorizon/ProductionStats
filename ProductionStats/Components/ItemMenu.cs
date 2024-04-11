@@ -12,66 +12,32 @@ using StardewValley.Menus;
 
 namespace ProductionStats.Components;
 
-internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
+internal class ItemMenu : BaseMenu, IScrollableMenu, IDisposable
 {
-    private readonly IEnumerable<ItemStock> _production;
-    private readonly string _title = string.Empty;
+    private readonly IEnumerable<ItemStock> _itemStocks;
     private readonly IMonitor _monitor;
-    private readonly IReflectionHelper _reflection;
     private readonly int _scrollAmount;
     private readonly bool _forceFullScreen;
 
-    /// <summary>
-    /// The clickable 'scroll up' icon.
-    /// </summary>
+    /// <summary>The aspect ratio of the page background.</summary>
+    private readonly Vector2 _aspectRatio = new(Sprites.Letter.Sprite.Width, Sprites.Letter.Sprite.Height);
+
+    /// <summary>The clickable 'scroll up' icon.</summary>
     private readonly ClickableTextureComponent _scrollUpButton;
 
-    /// <summary>
-    /// The clickable 'scroll down' icon.
-    /// </summary>
+    /// <summary>The clickable 'scroll down' icon.</summary>
     private readonly ClickableTextureComponent _scrollDownButton;
-
-    /// <summary>
-    /// The clickable 'go back' icon.
-    /// </summary>
-    private readonly ClickableTextureComponent _previousPageButton;
-
-    /// <summary>
-    /// The clickable 'go next' icon.
-    /// </summary>
-    private readonly ClickableTextureComponent _nextPageButton;
-
-    /// <summary>The aspect ratio of the page background.</summary>
-    private readonly Vector2 _aspectRatio = new(
-        Sprites.Letter.Sprite.Width,
-        Sprites.Letter.Sprite.Height);
-
-    /// <summary>The spacing around the scroll buttons.</summary>
-    private readonly int _scrollButtonGutter = 15;
-
-    /// <summary>The search input box.</summary>
-    private readonly SearchTextBox _searchTextBox;
-
-    /// <summary>
-    /// The current search results.
-    /// </summary>
-    private IEnumerable<ItemStock> _searchResults = [];
 
     /// <summary>
     ///     Whether to exit the menu on the next update tick.
     /// </summary>
     private bool _exitOnNextTick;
 
+    /// <summary>The spacing around the scroll buttons.</summary>
+    private readonly int _scrollButtonGutter = 15;
+
     /// <summary>The number of pixels to scroll.</summary>
     private int _currentScroll;
-
-    /// <summary>
-    ///     Whether the game's draw mode has been validated for compatibility.
-    /// </summary>
-    private bool _validatedDrawMode;
-
-    /// <summary>The maximum pixels to scroll.</summary>
-    private int _maxScroll;
 
     /// <summary>
     ///     The blend state to use when rendering the content sprite batch.
@@ -88,32 +54,37 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
     };
 
     /// <summary>
-    /// Raises an event when metric page has 
-    /// been changed to previous (left arrow).
+    ///     Whether the game's draw mode has been validated for compatibility.
     /// </summary>
-    public EventHandler<ChangedPageArgs>? ChangedToPreviousPage;
+    private bool _validatedDrawMode;
+
+    /// <summary>Simplifies access to private game code.</summary>
+    private readonly IReflectionHelper _reflection;
+
+    /// <summary>The maximum pixels to scroll.</summary>
+    private int _maxScroll;
 
     /// <summary>
-    /// Raises an event when metric page has 
-    /// been changed to next (right arrow).
+    /// Defines how items should be sorted when displayed. By defualt - 
+    /// order depends on when item was retrieved from memory.
     /// </summary>
-    public EventHandler<ChangedPageArgs>? ChangedToNextPage;
+    private Func<IEnumerable<ItemStock>, IEnumerable<ItemStock>> _sortOrder
+        = (IEnumerable<ItemStock> items) => items;
 
-    /// <summary>
-    /// Raises an event when metric page is closing.
-    /// </summary>
-    public EventHandler? Closing;
+    /// <summary>The current search results.</summary>
+    private IEnumerable<ItemStock> _searchResults = [];
 
-    public ProductionMenu(
-        IEnumerable<ItemStock> production,
-        string title,
+    /// <summary>The search input box.</summary>
+    private readonly SearchTextBox _searchTextBox;
+
+    public ItemMenu(
+        IEnumerable<ItemStock> itemStocks,
         IMonitor monitor,
         IReflectionHelper reflectionHelper,
         int scroll,
         bool forceFullScreen)
     {
-        _production = production;
-        _title = title;
+        _itemStocks = itemStocks;
         _monitor = monitor;
         _reflection = reflectionHelper;
         _scrollAmount = scroll;
@@ -135,21 +106,20 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
             CommonSprites.Icons.DownArrow,
             1);
 
-        _previousPageButton = new ClickableTextureComponent(
-            bounds: Rectangle.Empty,
-            texture: CommonSprites.Icons.Sheet,
-            sourceRect: CommonSprites.Icons.LeftArrow,
-            scale: 1);
-
-        _nextPageButton = new ClickableTextureComponent(
-            Rectangle.Empty,
-            CommonSprites.Icons.Sheet,
-            CommonSprites.Icons.RightArrow,
-            scale: 1);
-
+        // update layout
         UpdateLayout();
         _searchTextBox.OnChanged += (_, text) => ReceiveSearchTextboxChanged(text);
+
+        // hide game HUD
+        Game1.displayHUD = false;
     }
+
+    /// <summary>
+    /// Indicates if we are filtering or not. If we are, they disable sorting.
+    /// </summary>
+    public bool IsFiltering => string.IsNullOrEmpty(_searchTextBox.Text) == false;
+
+    public bool IsSearchTextBoxFocused => _searchTextBox.Selected;
 
     private void ReceiveSearchTextboxChanged(string search)
     {
@@ -157,12 +127,12 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
         string[] words = (search ?? "").Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
         if (!words.Any())
         {
-            _searchResults = _production;
+            _searchResults = _itemStocks;
             return;
         }
 
         // get results
-        _searchResults = _production
+        _searchResults = _itemStocks
             .Where(entry => words.All(word => entry.Item.DisplayName.IndexOf(word, StringComparison.OrdinalIgnoreCase) >= 0))
             .Select(entry => (entry,
                 words.Select(word => entry.Item.DisplayName.IndexOf(word, StringComparison.OrdinalIgnoreCase))
@@ -172,6 +142,22 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
             .ToList();
     }
 
+    public override void receiveKeyPress(Keys key)
+    {
+        if (key.Equals(Keys.Escape))
+        {
+            if (IsSearchTextBoxFocused)
+            {
+                _searchTextBox.Deselect();
+            }
+            else
+            {
+                exitThisMenu();
+            }
+        }
+    }
+
+    /// <summary>Update the layout dimensions based on the current game scale.</summary>
     private void UpdateLayout()
     {
         Point viewport = GetViewportSize();
@@ -216,29 +202,6 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
             height: CommonSprites.Icons.DownArrow.Width);
     }
 
-    /// <summary>
-    /// Indicates if we are filtering or not. If we are, they disable sorting.
-    /// </summary>
-    public bool IsFiltering => string.IsNullOrEmpty(_searchTextBox.Text) == false;
-
-    public bool IsSearchTextBoxFocused => _searchTextBox.Selected;
-
-    public override void receiveKeyPress(Keys key)
-    {
-        if (key.Equals(Keys.Escape))
-        {
-            if (IsSearchTextBoxFocused)
-            {
-                _searchTextBox.Deselect();
-            }
-            else
-            {
-                exitThisMenu();
-                Closing?.Invoke(this, EventArgs.Empty);
-            }
-        }
-    }
-
     /// <summary>The method invoked when the player left-clicks on the lookup UI.</summary>
     /// <param name="x">The X-position of the cursor.</param>
     /// <param name="y">The Y-position of the cursor.</param>
@@ -246,55 +209,6 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
     public override void receiveLeftClick(int x, int y, bool playSound = true)
     {
         HandleLeftClick(x, y);
-    }
-
-    /// <summary>Handle a left-click from the player's mouse or controller.</summary>
-    /// <param name="x">The x-position of the cursor.</param>
-    /// <param name="y">The y-position of the cursor.</param>
-    public void HandleLeftClick(int x, int y)
-    {
-        if (_searchTextBox.Bounds.Contains(x, y))
-        {
-            _searchTextBox.Select();
-        }
-        else
-        {
-            _searchTextBox.Deselect();
-        }
-
-        if (_previousPageButton.bounds.Contains(x, y))
-        {
-            PreviousMetric();
-        }
-        else if (_nextPageButton.bounds.Contains(x, y))
-        {
-            NextMetric();
-        }
-
-        // close menu when clicked outside
-        if (isWithinBounds(x, y) == false)
-        {
-            exitThisMenu();
-        }
-        // scroll up or down
-        else if (_scrollUpButton.containsPoint(x, y))
-        {
-            ScrollUp();
-        }
-        else if (_scrollDownButton.containsPoint(x, y))
-        {
-            ScrollDown();
-        }
-    }
-
-    private void NextMetric()
-    {
-        ChangedToNextPage?.Invoke(this, new ChangedPageArgs(_title));
-    }
-
-    private void PreviousMetric()
-    {
-        ChangedToPreviousPage?.Invoke(this, new ChangedPageArgs(_title));
     }
 
     /// <summary>The method invoked when the player right-clicks on the lookup UI.</summary>
@@ -351,6 +265,36 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
             case Buttons.RightThumbstickDown:
                 ScrollDown();
                 break;
+        }
+    }
+
+    /// <summary>Handle a left-click from the player's mouse or controller.</summary>
+    /// <param name="x">The x-position of the cursor.</param>
+    /// <param name="y">The y-position of the cursor.</param>
+    public void HandleLeftClick(int x, int y)
+    {
+        if (_searchTextBox.Bounds.Contains(x, y))
+        {
+            _searchTextBox.Select();
+        }
+        else
+        {
+            _searchTextBox.Deselect();
+        }
+
+        // close menu when clicked outside
+        if (isWithinBounds(x, y) == false)
+        {
+            exitThisMenu();
+        }
+        // scroll up or down
+        else if (_scrollUpButton.containsPoint(x, y))
+        {
+            ScrollUp();
+        }
+        else if (_scrollDownButton.containsPoint(x, y))
+        {
+            ScrollDown();
         }
     }
 
@@ -454,6 +398,9 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
 
                 // scrolled down == move text up
                 topOffset -= _currentScroll;
+
+                bool leftSide = true;
+
                 float wrapWidth = width - leftOffset - gutter;
                 _searchTextBox.Bounds = new Rectangle(
                             x: x + (int)leftOffset,
@@ -461,47 +408,18 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
                             width: (int)wrapWidth,
                             height: _searchTextBox.Bounds.Height);
 
-                // draw search box
                 _searchTextBox.Draw(contentBatch);
-                topOffset += _searchTextBox.Bounds.Height + 15;
-
-                var stringMeasure = font.MeasureString(_title);
-                var centerX = (Game1.viewport.Width / 2) - (stringMeasure.X / 2);
-
-                var titleBounds = contentBatch.DrawTextBlock(
-                    font,
-                    _title,
-                    new(centerX, y + topOffset),
-                    wrapWidth);
-
-                // draw left / right arrows
-                _previousPageButton.bounds = new Rectangle(
-                    x: (Game1.viewport.Width / 2) - CommonSprites.Icons.LeftArrow.Width - 160,
-                    y: y + (int)topOffset,
-                    width: CommonSprites.Icons.LeftArrow.Width,
-                    height: CommonSprites.Icons.LeftArrow.Height);
-
-                _nextPageButton.bounds = new Rectangle(
-                    x: (Game1.viewport.Width / 2) + 160,
-                    y: y + (int)topOffset,
-                    width: CommonSprites.Icons.LeftArrow.Width,
-                    height: CommonSprites.Icons.LeftArrow.Height);
-
-                _previousPageButton.draw(contentBatch);
-                _nextPageButton.draw(contentBatch);
-
-                topOffset += titleBounds.Y + 15;
+                topOffset += _searchTextBox.Bounds.Height;
 
                 IEnumerable<ItemStock> items = IsFiltering
-                    ? _searchResults ?? _production
-                    : _production;
+                    ? _searchResults ?? _itemStocks
+                    : _itemStocks;
 
-                bool leftSide = true;
-                foreach (ItemStock stock in items)
+                foreach (ItemStock itemStock in _sortOrder(items))
                 {
                     leftOffset = leftSide ? gutter : leftOffset + 500;
 
-                    stock.Item.drawInMenu(
+                    itemStock.Item.drawInMenu(
                         spriteBatch: contentBatch,
                         location: new Vector2(x + leftOffset, y + topOffset),
                         scaleSize: 1,
@@ -514,7 +432,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
                     leftOffset += 80;
 
                     // drawing item count
-                    string item = $"{stock.Count}x ";
+                    string item = $"{itemStock.Count}x ";
                     Vector2 itemCountPosition = new(x + leftOffset, y + topOffset + 15);
                     Vector2 itemCountSize = contentBatch.DrawTextBlock(
                             font: font,
@@ -529,7 +447,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
 
                     Vector2 nameSize = contentBatch.DrawTextBlock(
                         font: font,
-                        text: $"{stock.Item.DisplayName}",
+                        text: $"{itemStock.Item.DisplayName}",
                         position: namePosition,
                         wrapWidth: wrapWidth,
                         bold: Constant.AllowBold);
@@ -588,6 +506,20 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
         drawMouse(Game1.spriteBatch);
     }
 
+    /// <summary>Update the menu state if needed.</summary>
+    /// <param name="time">The elapsed game time.</param>
+    public override void update(GameTime time)
+    {
+        if (_exitOnNextTick && readyToClose())
+        {
+            exitThisMenu();
+        }
+        else
+        {
+            base.update(time);
+        }
+    }
+
     /// <summary>Exit the menu at the next safe opportunity.</summary>
     /// <remarks>
     ///     This circumvents an issue where the game may freeze in 
@@ -616,21 +548,27 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
     {
         _searchTextBox.Dispose();
         _contentBlendState.Dispose();
+        CleanupImpl();
+    }
+
+    /// <summary>Perform cleanup specific to the lookup menu.</summary>
+    private static void CleanupImpl() => Game1.displayHUD = true;
+
+    /// <summary>
+    /// Applies sorting order to items displayed in the menu.
+    /// </summary>
+    /// <param name="sortOrder">Sorting order to apply.</param>
+    internal void ApplySort(SortOrder sortOrder)
+    {
+        _sortOrder = sortOrder switch
+        {
+            SortOrder.DescendingByName => (IEnumerable<ItemStock> items) => items.OrderByDescending(x => x.Item.Name),
+            SortOrder.AscendingByName => (IEnumerable<ItemStock> items) => items.OrderBy(x => x.Item.Name),
+            SortOrder.DescendingByCount => (IEnumerable<ItemStock> items) => items.OrderByDescending(x => x.Count),
+            SortOrder.AscendingByCount => (IEnumerable<ItemStock> items) => items.OrderBy(x => x.Count),
+            _ => (IEnumerable<ItemStock> items) => items
+        };
     }
 
     internal void FocusSearch() => _searchTextBox.Select();
-
-    /// <summary>Update the menu state if needed.</summary>
-    /// <param name="time">The elapsed game time.</param>
-    public override void update(GameTime time)
-    {
-        if (_exitOnNextTick && readyToClose())
-        {
-            exitThisMenu();
-        }
-        else
-        {
-            base.update(time);
-        }
-    }
 }

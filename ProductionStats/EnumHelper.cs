@@ -3,7 +3,7 @@ using System.Reflection;
 
 namespace ProductionStats;
 
-internal static class EnumExtensions
+internal static class EnumHelper
 {
     /// <summary>
     /// Get the description for a given value of the enum.
