@@ -9,9 +9,10 @@ internal static class VisualizationDataset
     {
         Random rnd = new(1);
 
-        string itemType = ItemRegistry.type_object;
-        ObjectDataDefinition definition = (ObjectDataDefinition)ItemRegistry.GetTypeDefinition(itemType);
-        var ids = definition.GetAllIds().ToArray();
+        var definition = (ObjectDataDefinition)ItemRegistry
+            .GetTypeDefinition(ItemRegistry.type_object);
+
+        string[] ids = definition.GetAllIds().ToArray();
 
         for (int i = 0; i < 30; i++)
         {
