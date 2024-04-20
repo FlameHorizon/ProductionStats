@@ -94,33 +94,42 @@ internal class ModEntry : Mod
     }
 
     private void OnSaving(object? sender, SavingEventArgs e)
-        => Helper.Data.WriteSaveData("inventory-tracker", _inventoryTracker);
+    {
+        Helper.Data.WriteSaveData("inventory-tracker-start", _inventoryTracker.Start);
+
+        // I can't serialize entire Item object. Instead
+        // I'm just going to save QualifiedItemId and recreate Item object
+        // later.
+        var items = _inventoryTracker.TrackedItems.Select(x => x.ToSerializeable());
+        Helper.Data.WriteSaveData("inventory-tracker-items", items);
+    }
 
     private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
     {
-        _inventoryTracker = Helper.Data.ReadSaveData<InventoryTracker>("inventory-tracker")!;
+        SDate inventoryTrackerStart = Helper.Data.ReadSaveData<SDate>("inventory-tracker-start")!;
 
         // initialize tracker and create spot of it in save data if
         // isn't there already.
-        if (_inventoryTracker is null)
-        {
-            _inventoryTracker = new InventoryTracker(
-                dateProvider: new InGameTimeProvider(),
-                start: SDate.Now());
+        inventoryTrackerStart ??= SDate.Now();
 
-            Helper.Data.WriteSaveData("inventory-tracker", _inventoryTracker);
-        }
+        _inventoryTracker = new InventoryTracker(
+            dateProvider: new InGameTimeProvider(),
+            start: inventoryTrackerStart);
 
-#if DEBUG
-        // DEBUG FEATURE - produce random dataset for visualization.
-        foreach ((Item Item, int Count) in VisualizationDataset.Get())
+        Helper.Data.WriteSaveData("inventory-tracker-start", inventoryTrackerStart);
+
+        // Because it is not possible to serialize complete Item
+        // using WriteSaveData instead, I was able to serialize
+        // QualifiedItemId along with rest of the data which later
+        // will be used to recreate TrackedItem objects.
+        var items = Helper.Data
+            .ReadSaveData<IEnumerable<(string QualifiedItemId, int Count, SDate Date)>>("inventory-tracker-items");
+
+        if (items is not null)
         {
-            _inventoryTracker.Add(Item, Count, SDate.Now());
-            _inventoryTracker.Add(Item, Count, SDate.Now().AddDays(2));
-            _inventoryTracker.Add(Item, Count, SDate.Now().AddWeeks(2));
-            _inventoryTracker.Add(Item, Count, SDate.Now().AddSeasons(2));
+            var trackedItems = items.Select(x => new TrackedItem(x));
+            _inventoryTracker.TrackedItems = trackedItems.ToList();
         }
-#endif
     }
 
     private void OnChestInventoryChanged(object? sender, ChestInventoryChangedEventArgs e)

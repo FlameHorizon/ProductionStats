@@ -6,7 +6,7 @@ namespace ProductionStats;
 
 internal class InventoryTracker
 {
-    private readonly List<TrackedItem> _trackedItems = [];
+    public List<TrackedItem> TrackedItems = [];
     private IDateProvider _dateProvider;
 
     public InventoryTracker(IDateProvider dateProvider, SDate start)
@@ -37,7 +37,7 @@ internal class InventoryTracker
     public void Add(Item item, int count, SDate date)
     {
         TrackedItem tracked = new(item, count, date);
-        _trackedItems.Add(tracked);
+        TrackedItems.Add(tracked);
     }
 
     /// <summary>
@@ -52,9 +52,9 @@ internal class InventoryTracker
     {
         // Filter the tracked items to get those produced on the specified date,
         // then project them into item names and their counts.
-        return _trackedItems
+        return TrackedItems
             .Where(item => item.Date == date)
-            .GroupBy(item => item.Item)
+            .GroupBy(item => item.Item, new QualifiedItemIdEqualityComparer())
             .Select(group => new ItemStock(group.Key) { Count = group.Sum(item => item.Count) })
             .Where(result => result.Count > 0);
     }
@@ -91,10 +91,10 @@ internal class InventoryTracker
     {
         // Filter the tracked items to get those produced between the start and end dates,
         // then project them into item names and their counts.
-        return _trackedItems
+        return TrackedItems
             .Where(item => item.Date.IsBetween(start, end))
             .Select(result => (result.Item, result.Count))
-            .GroupBy(item => item.Item)
+            .GroupBy(item => item.Item, new QualifiedItemIdEqualityComparer())
             .Select(group => new ItemStock(group.Key) { Count = group.Sum(item => item.Count) })
             .Where(result => result.Count > 0);
     }
@@ -156,5 +156,4 @@ internal class InventoryTracker
     {
         _dateProvider ??= new InGameTimeProvider();
     }
-
 }
