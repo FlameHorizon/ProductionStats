@@ -156,6 +156,13 @@ internal class ModEntry : Mod
                 _inventoryTracker.TrackedItems = trackedItems.ToList();
             }
         }
+
+#if DEBUG
+        foreach (var item in VisualizationDataset.Get())
+        {
+            _inventoryTracker.Add(item.Item, item.Count);
+        }
+#endif
     }
 
     private void OnChestInventoryChanged(object? sender, ChestInventoryChangedEventArgs e)

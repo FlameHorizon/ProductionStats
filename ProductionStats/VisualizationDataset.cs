@@ -16,14 +16,16 @@ internal static class VisualizationDataset
 
         for (int i = 0; i < 30; i++)
         {
-            string itemId = Convert.ToString((rnd.Next(0, ids.Length)));
+            string itemId = Convert.ToString(rnd.Next(0, ids.Length));
             int amount = rnd.Next(1, 20);
-            Item item = ItemRegistry.Create(itemId, amount);
+            int quality = rnd.Next(0, 5);
+
+            Item item = ItemRegistry.Create(itemId, amount, quality);
 
             while (item.DisplayName.Contains("Error"))
             {
                 itemId = Convert.ToString((rnd.Next(0, ids.Length)));
-                item = ItemRegistry.Create(itemId, amount);
+                item = ItemRegistry.Create(itemId, amount, quality);
             }
 
             yield return (item, amount);
