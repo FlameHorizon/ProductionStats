@@ -100,8 +100,20 @@ internal class ModEntry : Mod
         // I can't serialize entire Item object. Instead
         // I'm just going to save QualifiedItemId and recreate Item object
         // later.
-        var items = _inventoryTracker.TrackedItems.Select(x => x.ToSerializeable());
-        Helper.Data.WriteSaveData("inventory-tracker-items", items);
+
+        // If first version of tracked items is present in save,
+        // continue using it, otherwise, switch to v2.
+        // This was added to not break existing saves with different versions.
+        if (Helper.Data.SaveDataKeyExists("inventory-tracker-items"))
+        {
+            var items = _inventoryTracker.TrackedItems.Select(x => x.ToSerializeable());
+            Helper.Data.WriteSaveData("inventory-tracker-items", items);
+        }
+        else
+        {
+            var items = _inventoryTracker.TrackedItems.Select(x => x.ToSerializableV2());
+            Helper.Data.WriteSaveData("inventory-tracker-items-v2", items);
+        }
     }
 
     private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
@@ -122,13 +134,27 @@ internal class ModEntry : Mod
         // using WriteSaveData instead, I was able to serialize
         // QualifiedItemId along with rest of the data which later
         // will be used to recreate TrackedItem objects.
-        var items = Helper.Data
-            .ReadSaveData<IEnumerable<(string QualifiedItemId, int Count, SDate Date)>>("inventory-tracker-items");
-
-        if (items is not null)
+        if (Helper.Data.SaveDataKeyExists("inventory-tracker-items"))
         {
-            var trackedItems = items.Select(x => new TrackedItem(x));
-            _inventoryTracker.TrackedItems = trackedItems.ToList();
+            var items = Helper.Data
+                .ReadSaveData<IEnumerable<(string QualifiedItemId, int Count, SDate Date)>>("inventory-tracker-items");
+
+            if (items is not null)
+            {
+                var trackedItems = items.Select(x => new TrackedItem(x));
+                _inventoryTracker.TrackedItems = trackedItems.ToList();
+            }
+        }
+        else
+        {
+            var items = Helper.Data
+                .ReadSaveData<IEnumerable<(string QualifiedItemId, int Quality, int Count, SDate Date)>>("inventory-tracker-items-v2");
+
+            if (items is not null)
+            {
+                var trackedItems = items.Select(x => new TrackedItem(x));
+                _inventoryTracker.TrackedItems = trackedItems.ToList();
+            }
         }
     }
 

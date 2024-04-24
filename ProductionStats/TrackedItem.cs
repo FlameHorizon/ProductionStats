@@ -10,19 +10,39 @@ internal record TrackedItem(Item Item, int Count, SDate Date)
     /// </summary>
     /// <param name="info">Tuple storing data.</param>
     public TrackedItem((string QualifiedItemId, int Count, SDate Date) info)
-        : this(info.QualifiedItemId, info.Count, info.Date)
+            : this(info.QualifiedItemId, 0, info.Count, info.Date)
     {
     }
 
     /// <summary>
-    /// Creates instance using specified data.
+    /// Creates instance using tuple. Supports v2.
+    /// </summary>
+    /// <param name="info">Tuple storing data.</param>
+    public TrackedItem((string QualifiedItemId, int Quality, int Count, SDate Date) info)
+        : this(info.QualifiedItemId, info.Quality, info.Count, info.Date)
+    {
+    }
+
+    /// <summary>
+    /// Creates instance using tuple.
     /// </summary>
     /// <param name="qualifiedItemId">Item id using in <see cref="ItemRegistry"/> to spawn an item.</param>
     /// <param name="count">Number of items.</param>
     /// <param name="date">When item was acquired.</param>
-    public TrackedItem(string qualifiedItemId, int count, SDate date) : this(
-        ItemRegistry.Create(qualifiedItemId),
-        count, 
+    public TrackedItem(string qualifiedItemId, int count, SDate date)
+        : this(qualifiedItemId, 0, count, date)
+    {
+    }
+
+    /// <summary>
+    /// Creates instance using specified data. Supports v2.
+    /// </summary>
+    /// <param name="qualifiedItemId">Item id using in <see cref="ItemRegistry"/> to spawn an item.</param>
+    /// <param name="count">Number of items.</param>
+    /// <param name="date">When item was acquired.</param>
+    public TrackedItem(string qualifiedItemId, int quality, int count, SDate date) : this(
+        ItemRegistry.Create(qualifiedItemId, amount: 1, quality: quality),
+        count,
         date)
     {
     }
@@ -31,6 +51,15 @@ internal record TrackedItem(Item Item, int Count, SDate Date)
     /// Converts <see cref="TrackedItem"/> to a form which can be serialized.
     /// </summary>
     /// <returns>Tuple representing tracked item.</returns>
-    internal (string, int, SDate) ToSerializeable() 
+    internal (string, int, SDate) ToSerializeable()
         => (Item.QualifiedItemId, Count, Date);
+
+    /// <summary>
+    /// Converts <see cref="TrackedItem"/> to a form which can be serialized. 
+    /// Supports v2.
+    /// </summary>
+    /// <returns></returns>
+    internal (string, int, int, SDate) ToSerializableV2()
+        => (Item.QualifiedItemId, Item.Quality, Count, Date);
+
 }

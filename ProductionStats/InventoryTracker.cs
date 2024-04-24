@@ -54,7 +54,7 @@ internal class InventoryTracker
         // then project them into item names and their counts.
         return TrackedItems
             .Where(item => item.Date == date)
-            .GroupBy(item => item.Item, new QualifiedItemIdEqualityComparer())
+            .GroupBy(item => item.Item, new ItemEqualityComparer())
             .Select(group => new ItemStock(group.Key) { Count = group.Sum(item => item.Count) })
             .Where(result => result.Count > 0);
     }
@@ -94,7 +94,7 @@ internal class InventoryTracker
         return TrackedItems
             .Where(item => item.Date.IsBetween(start, end))
             .Select(result => (result.Item, result.Count))
-            .GroupBy(item => item.Item, new QualifiedItemIdEqualityComparer())
+            .GroupBy(item => item.Item, new ItemEqualityComparer())
             .Select(group => new ItemStock(group.Key) { Count = group.Sum(item => item.Count) })
             .Where(result => result.Count > 0);
     }

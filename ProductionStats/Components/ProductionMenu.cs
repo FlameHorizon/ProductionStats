@@ -529,7 +529,7 @@ internal class ProductionMenu : BaseMenu, IScrollableMenu, IDisposable
 
                     Vector2 nameSize = contentBatch.DrawTextBlock(
                         font: font,
-                        text: $"{stock.Item.DisplayName}",
+                        text: $"{stock.Item.DisplayName} ({stock.Item.Quality})",
                         position: namePosition,
                         wrapWidth: wrapWidth,
                         bold: Constant.AllowBold);
